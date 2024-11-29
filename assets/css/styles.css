@@ -1,0 +1,240 @@
+body {
+    background-color: rgb(56, 55, 55);
+    text-decoration: none;
+    margin: 0;
+    padding: 0;
+}
+
+.Menu-content {
+    box-sizing: border-box;
+    background-color: black;
+    display: flex;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    z-index: 1;
+    justify-content: space-between;
+    align-items: center;
+    /* Centraliza verticalmente */
+    padding: 0 10px;
+    /* Adiciona algum espaçamento interno */
+}
+
+.Menu-content ul {
+    display: flex;
+    padding: 0;
+    align-items: center;
+    justify-content: space-between;
+    display: flex;
+}
+
+.Menu-content li {
+    display: grid;
+    padding-left: 8px;
+    padding-right: 8px;
+    font-size: 1.3rem;
+    color: white;
+    justify-content: space-between;
+
+    
+
+}
+
+.Menu-content a {
+    color: white;
+    text-align: center;
+    text-decoration: none;
+
+}
+
+.Menu-content h1 {
+    margin: 12%;
+    font-size: 1.8rem;
+    color: white;
+    
+    
+}
+
+.search-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Centraliza o botão horizontalmente */
+}
+
+.Button-28 {
+    appearance: none;
+    background-color: black;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    /* Faz com que o botão use o espaço disponível */
+    align-items: center;
+    justify-content: center;
+    font-family: Roobert, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 16px;
+    font-weight: 600;
+    margin-right: 100%;
+    padding: 8px 12px;
+    text-align: center;
+    text-decoration: none;
+    width: 100%;
+    height: 100%;
+    border: none;
+
+}
+
+
+
+.main {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: calc(100vh - 50px);
+    margin-top: 50px;
+}
+
+.grafico_1 {
+    background-color: rgb(41, 40, 40);
+    text-align: center;
+    padding: 10px;
+    height: 100%;
+    width: 100%;
+    /* Default width */
+    box-sizing: border-box;
+    transition: width 0.3s ease;
+    /* Smooth transition for width change */
+}
+
+
+.search-dashboards {
+    background-color: rgb(27, 25, 25);
+    display: flex;
+    flex-direction: column;
+    width: 15%;
+    height: 100%;
+    overflow: auto;
+    transition: transform 0.3s ease-in-out;
+}
+
+
+
+
+
+html ::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+html::-webkit-scrollbar-track
+{
+-webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0,3);
+border-radius: 1px;
+background-color: rgb(27, 25, 25);
+}
+html::-webkit-scrollbar
+{
+width: 1px;
+background-color :rgb(27, 25, 25);
+}
+html::-webkit-scrollbar-thumb
+{
+border-radius: 1px;}
+
+html ::-webkit-box-shadow
+{
+box-shadow : inset 0 0 3px rgba(0,0,0,.3);
+background-color: #D6E3FF;
+}
+
+
+
+.search-toggle {
+    position: fixed;
+    top: 10px;
+    left: 5%;
+    z-index: 2;
+}
+
+.item_search {
+    display: block;
+    text-align: center;
+}
+
+h5 {
+    margin: 0px;
+    text-align: center;
+    font-size: 1.8rem;
+    color: white;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.item_search a {
+    display: block;
+    text-decoration: none;
+    color: white;
+    padding: 10px;
+    margin: 10px;
+    font-size: 1.3rem;
+    border: 1px white solid;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+p {
+    display: block;
+    text-decoration: none;
+    color: white;
+    padding: 10px;
+    margin: 10px;
+    font-size: 1.0rem;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+h3 {
+    margin: 0px;
+    text-align: center;
+    font-size: 1.4rem;
+    color: white;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.button-27 {
+    appearance: none;
+    background-color: #000000;
+    border: 2px solid #1A1A1A;
+    border-radius: 15px;
+    box-sizing: border-box;
+    color: #FFFFFF;
+    cursor: pointer;
+    display: inline-block;
+    font-family: Roobert, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 16px;
+    font-weight: 600;
+    line-height: normal;
+    margin: 0;
+    min-height: 60px;
+    padding: 16px 24px;
+    text-align: center;
+    transition: all 300ms cubic-bezier(.23, 1, 0.32, 1);
+    width: 100%;
+}
+
+.button-27:hover {
+    box-shadow: rgba(0, 0, 0, 0.25) 0 8px 15px;
+    transform: translateY(-2px);
+}
+
+.button-27:active {
+    box-shadow: none;
+    transform: translateY(0);
+}
+
+
+   

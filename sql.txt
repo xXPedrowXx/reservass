@@ -1,0 +1,78 @@
+Create database controle_salas;
+
+
+use controle_salas;
+
+
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    conta VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL,
+    permissao INT NOT NULL CHECK (permissao BETWEEN 1 AND 10),
+    codigo_verificação Varchar(255),
+    verificado bool 
+);
+
+
+
+
+CREATE TABLE IF NOT EXISTS salas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome_sala VARCHAR(255) NOT NULL UNIQUE,
+    descricao VARCHAR(255) NOT NULL
+   
+);	
+
+
+CREATE TABLE IF NOT EXISTS indisponivel (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sala_id INT NOT NULL,
+    motivo VARCHAR(255) NOT NULL,
+    data_inicio DATETIME NOT NULL,
+    data_fim DATETIME NOT NULL,
+    user_id INT NOT NULL,
+    FOREIGN KEY (sala_id) REFERENCES salas(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+
+
+CREATE TABLE IF NOT EXISTS reservas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    sala_id INT NOT NULL,
+    data_inicio DATETIME NOT NULL,
+    data_fim DATETIME NOT NULL,
+    url varchar(255),
+    confirmacao BOOLEAN,
+    aviso_1hr BOOLEAN,
+    aviso_now BOOLEAN,
+    aviso_24hrs BOOLEAN,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (sala_id) REFERENCES salas(id)
+);
+
+
+
+CREATE TABLE IF NOT EXISTS membros (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    reserva_id INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (reserva_id) REFERENCES reservas(id)
+);
+
+
+INSERT INTO users (conta, email, senha, permissao, verificado) VALUES ('adm', 'adm', 'adm', 5, 1);
+
+
+    create table user_temp(
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        reserva_id int not NULL,
+        email varchar(255),
+        FOREIGN KEY (reserva_id) REFERENCES reservas(id)
+    );
+
+    
+*/1 * * * * php /var/www/html/controle_salas/envio_email.php

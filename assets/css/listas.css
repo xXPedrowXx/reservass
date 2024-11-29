@@ -1,0 +1,100 @@
+body {
+    background-color: rgb(56, 55, 55);
+    color: white;
+}
+
+.table {
+    color: white;
+    width: 100%;
+    text-align: center;
+    table-layout: auto; /* Permite que as células ajustem sua largura automaticamente */
+}
+
+.table td, .table th {
+    margin: auto;
+    justify-content: center;
+    border: none;
+    text-align: center;
+}
+
+#borda {
+    border: 1px solid white;
+}
+
+.table th {
+    background-color: black;
+    padding: 10px;
+    width: 50%;
+
+    
+}
+.table tr {
+    width: 80%;
+}
+
+#borda-bottom {
+    border-bottom: 1px solid white;
+}
+
+.btn-warning {
+    background-color: rgb(170, 132, 19);
+    border-color: black;
+    color: white;
+    text-align: center;
+    margin: 5px;
+}
+
+.btn-danger {
+    background-color: rgb(136, 45, 54);
+    color: white;
+    border-color: black;
+    text-align: center;
+    margin: 5px;
+}
+
+.btn-primary {
+    border-color: black;
+    text-align: center;
+    margin: 5px;
+
+}
+
+.btn-success {
+    border-color: black;
+    margin-bottom: 30px;
+    text-align: center;
+    margin: 5px;
+}
+
+html ::-webkit-scrollbar {
+    width: 10px;
+}
+
+html::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.3);
+    border-radius: 1px;
+    background-color: rgb(27, 25, 25);
+}
+
+html::-webkit-scrollbar {
+    width: 1px;
+    background-color: rgb(27, 25, 25);
+}
+
+html::-webkit-scrollbar-thumb {
+    border-radius: 1px;
+}
+
+html ::-webkit-box-shadow {
+    box-shadow: inset 0 0 3px rgba(0,0,0,0.3);
+    background-color: #D6E3FF;
+}
+
+
+.container h4 {
+    text-align: center;
+}
+
+.container .btn-primary .btn {
+    justify-content: right;
+}
