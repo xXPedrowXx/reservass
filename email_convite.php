@@ -26,7 +26,7 @@ $resultado = select_email($reserva_id, $conn);
       $membros_email = $row['membros_emails'];
       $sala_nome = $row['nome_sala'];
       $periodo = $row['periodo_reserva'];
-      $temp_membros_emails = $row['temp_membros_emails'];
+      $temp_membros_emails = $row['user_temp_email'];
 
 
                             $mesI = substr($periodo, 5, 2); // Do 5º ao 14º caractere
@@ -59,12 +59,11 @@ try {
     $mail->Port       = 465;                                 //Enable SMTP authentication
     $mail->Username   = '';                     //SMTP username
     $mail->Password   = '';  
-
     $mail->CharSet    = 'utf8';                               // utf8 / iso-8859-1
     $mail->SMTPSecure = "ssl";
 
     //Recipients
-    $mail->setFrom('' , 'Ti');
+    $mail->setFrom('integracao@apklog.com.br' , 'Ti');
  
 
     foreach ($email_usuario as $index => $email) {

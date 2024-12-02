@@ -40,7 +40,12 @@ function load() {
 
       if (dayNumber >= day && nav === 0) {
         dayS.addEventListener('click', () => {
-          window.location.href = `/lista_reservas_dia.php?dia=${dayNumber}&mes=${month + 1}&ano=${year}`;
+          window.location.href = `/controle_salas/lista_reservas_dia.php?dia=${dayNumber}&mes=${month + 1}&ano=${year}`;
+        });
+      }
+      if (nav > 0) {
+        dayS.addEventListener('click', () => {
+          window.location.href = `/controle_salas/lista_reservas_dia.php?dia=${dayNumber}&mes=${month + 1}&ano=${year}`;
         });
       }
 
@@ -119,7 +124,7 @@ function fetchEvents(year, month) {
           }
           return {
             date: reserva.data_inicio.split(' ')[0],
-            title: `sala: ${reserva.nome_sala} 
+            title: ` ${reserva.nome_sala} 
             ${reserva.data_inicio.slice(-8, -3)} - ${reserva.data_fim.slice(-8, -3)}`,
             room: reserva.nome_sala
           };
@@ -153,7 +158,7 @@ function fetchEvents2(year, month) {
           }
           return {
             date: reserva.data_inicio.split(' ')[0],
-            title: `sala: ${reserva.nome_sala}
+            title: ` ${reserva.nome_sala}
              ${reserva.data_inicio.slice(-8, -3)} - ${reserva.data_fim.slice(-8, -3)}`,
             room: reserva.nome_sala
           };

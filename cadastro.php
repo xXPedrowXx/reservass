@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     insertU($conta, $email, $senha, '1' ,$numero ,$conn);
 
-    header('Location: email_confirmacao.php');
+    header('Location: email_confirmacao.php?email='.$email.'');
 }
 ?>
 <!DOCTYPE html>

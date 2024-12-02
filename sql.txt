@@ -75,4 +75,4 @@ INSERT INTO users (conta, email, senha, permissao, verificado) VALUES ('adm', 'a
     );
 
     
-*/1 * * * * php /var/www/html/controle_salas/envio_email.php
+*/5 * * * * lynx -dump https:/192.168.0.140/envio_email.php

@@ -34,13 +34,12 @@ if ($resultado && $resultado->num_rows > 0) {
   $mail->Port       = 465;                                 //Enable SMTP authentication
   $mail->Username   = '';                     //SMTP username
   $mail->Password   = '';  
-
   $mail->CharSet    = 'utf8';                               // utf8 / iso-8859-1
   $mail->SMTPSecure = "ssl";
  
  
      //Recipients
-     $mail->setFrom('' , '');
+     $mail->setFrom('integracao@apklog.com.br' , 'ti');
 
     $mail->addAddress($email, $nome);     //Add a recipient
  
@@ -407,5 +406,5 @@ if ($resultado && $resultado->num_rows > 0) {
     echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
 }
 
-header("Location: primeiro_login.php");
+//header("Location: primeiro_login.php");
 

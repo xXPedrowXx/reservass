@@ -3,7 +3,7 @@
 session_start();
 $servername = "localhost";
 $username = "root";
-$password = "adm";
+$password = "";
 $dbname = "controle_salas";
 
 $conn = new mysqli($servername, $username, $password, $dbname);

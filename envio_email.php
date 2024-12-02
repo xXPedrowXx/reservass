@@ -8,7 +8,7 @@ while ($row = $resultado->fetch_assoc()) {
     sendReminderEmails( $conn);
 }
 
-header("Location: index.php"); 
+//header("Location: index.php"); 
 
 function sendReminderEmails( $conn) {
     $todayArray = getdate();

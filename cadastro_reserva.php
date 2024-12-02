@@ -116,7 +116,7 @@ select_sala($conn);
                 </div>
                 
                
-                <input type="hidden" id="user_id" name="user_id" required>
+                <input type="hidden" id="user_id" name="user_id" >
 
             <p id="membrosList"></p>
 
@@ -240,10 +240,7 @@ function createReservation() {
 
 function addMembers(reserva_id) {
     console.log("Membros recebidos:", membros); // Verifica se está correto
-    if (!membros || membros.length === 0) {
-        console.error("Erro: membros está vazio ou indefinido!");
-        return;
-    }
+    
 
     $.ajax({
         type: "POST",
