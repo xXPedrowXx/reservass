@@ -260,6 +260,7 @@ function addMembers(reserva_id) {
         error: function(xhr, status, error) {
             console.error("Erro na requisição:", xhr.responseText); // Mostra o erro retornado
         }
+        
     });
 }
 

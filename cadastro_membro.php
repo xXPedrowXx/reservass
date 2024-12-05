@@ -1,6 +1,7 @@
 <?php
 include 'inc/query.php'; 
 
+
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
 
@@ -17,6 +18,27 @@ if (!$reserva_id) {
     exit();
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $membros = $_POST['values'] ?? [];
+    $membrosExternos = $_POST['externos'] ?? [];
+
+
+    if (empty($membros) && empty($membrosExternos)) {
+        echo json_encode(['success' => false, 'message' => 'Erro: membros está vazio ou indefinido!']);
+        exit();
+    }
+
+    // Processar os membros e membros externos aqui
+    // ...
+
+   
+
+    echo json_encode(['success' => true]);
+
+    exit();
+
+    
+}
 ?>
 
 <!DOCTYPE html>
@@ -47,12 +69,15 @@ if (!$reserva_id) {
                         ?>
                     </div>
                 </div>
+                <p id="membrosList"></p>
 
                 <label for="grupo_id">Membros Externos</label>
-                <input type="text" placeholder="Digite o email do membro externo" id="emailInputExterno" class="form-control">
+                <input type="text" class="dropbtn" placeholder="Digite o email e tecle Enter " id="emailInputExterno" class="form-control" onkeypress="if(event.key === 'Enter') { addExternalEmail(); event.preventDefault(); this.value = ''; }">
 
                 <input type="hidden" id="user_id" name="user_id" required>
-                <p id="membrosList"></p>
+                <p id="membrosEList"></p>
+
+
 
                 <button type="submit" class="btn btn-primary">Adicionar Membros</button>
             </form>
@@ -108,7 +133,16 @@ if (!$reserva_id) {
 
             if (emailInputExterno && !membrosExternos.includes(emailInputExterno)) {
                 membrosExternos.push(emailInputExterno);
-                document.getElementById("membrosList").innerText += ' , ' + emailInputExterno;
+                document.getElementById("membrosEList").innerText = membrosExternos.join(' , ');
+                console.log(membrosExternos);
+            }
+        }
+
+        function addExternalEmail() {
+            let emailInputExterno = document.getElementById("emailInputExterno").value;
+            if (emailInputExterno && !membrosExternos.includes(emailInputExterno)) {
+                membrosExternos.push(emailInputExterno);
+                document.getElementById("membrosEList").innerText = membrosExternos.join(' , ');
                 console.log(membrosExternos);
             }
         }

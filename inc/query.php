@@ -4,6 +4,7 @@
 include 'inc/permissao.php';
 
 
+
 function handleError($errorMessage) {
     // Redirecione para uma página de erro amigável
     header('Location: ./inc/error_page.php?error=' . urlencode($errorMessage));
@@ -227,6 +228,8 @@ function insert_user_temp($reserva_id, $email, $conn) {
     } else {
         return false;
     }
+
+    
 }
 
 
@@ -277,6 +280,7 @@ function insertM2($user_id, $data_inicio, $data_fim, $sala_id, $conn) {
 }
 
 function insertM ($user_id,$reserva_id,$conn) {
+    global $googleOauthURL; // Declare a variável global
 try {  
     $sql = $conn->prepare("INSERT INTO membros (user_id, reserva_id) VALUES (?, ?)");
 $sql->bind_param("ii", $user_id, $reserva_id); $sql->execute(); } catch (mysqli_sql_exception $e) { handleError("Erro ao cadastrar membro atentar-se aos usuarios já adicionados : " . $e->getMessage()); } $sql->close(); }
@@ -292,10 +296,12 @@ catch (mysqli_sql_exception $e) {
     handleError("Erro ao confirmar reserva atentar-se a confirmação  já realizada  : ");
 }
 $sql->close();
+
 }
 
 
 function insertR($user_id, $sala_id, $data_inicio, $data_fim, $url, $conn) {
+  
     try {
         if (empty(checkAvailability($conn, $sala_id, $data_inicio, $data_fim))) {
             $sql = $conn->prepare("INSERT INTO reservas (user_id, sala_id, data_inicio, data_fim, url, confirmacao, aviso_1hr, aviso_now, aviso_24hrs) VALUES (?, ?, ?, ?, ?, 0, 0, 0, 0)");
@@ -311,16 +317,18 @@ function insertR($user_id, $sala_id, $data_inicio, $data_fim, $url, $conn) {
             $sql->close();
 
             insertM($user_id, $reserva_id, $conn);
-
+           
             return $reserva_id; // Retorna o ID da reserva inserida
         } else {
             handleError("Erro ao reservar: sala não disponível.");
             return false;
+     
         }
     } catch (mysqli_sql_exception $e) {
         handleError("Erro ao reservar atente-se á outra reserva marcada nessa mesma hora na mesma sala ou escolha a sala antes de reservar: " . $e->getMessage());
         return false;
     }
+
 }
 
 

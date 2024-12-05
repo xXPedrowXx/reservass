@@ -118,9 +118,9 @@ select_por_membros($reserva_id, $conn);
         </table>
         <div style="text-align: right; margin-top:20px;">
             <?php
-            if (($confirmacao == 0) and ($user_permissao == 5 || $locatario_id == $id)) {
-                echo '<a href="confirmar_reserva.php?reserva_id='.$reserva_id.'" role="button" class="btn btn-warning btn-sm">Confirmar</a>';
-            }
+if (($confirmacao == 0) and ($user_permissao == 5 || $locatario_id == $id)) {
+    echo '<a href="confirmar_reserva.php?reserva_id='.$reserva_id.'" role="button" class="btn btn-warning btn-sm">Confirmar</a>';
+}
 
             echo '<a href="calendario.php" role="button" class="btn btn-primary btn-sm">Voltar</a>';
 
