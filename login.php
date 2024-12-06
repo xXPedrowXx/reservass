@@ -40,6 +40,8 @@
 <?php
 include 'inc/query.php'; 
 
+
+
 $err_email = $err_password = $err_missing = "";
 
 if ($_SERVER['REQUEST_METHOD'] == "POST") {

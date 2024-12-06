@@ -214,7 +214,7 @@ function insertI($user_id, $sala_id, $data_inicio, $data_fim, $tempo, $conn) {
         $sql->close();
         return true;
     } catch (mysqli_sql_exception $e) {
-        handleError("Erro ao cadastrar sala atentar-se a nome de salas repetidas: " );
+        handleError("Erro ao cadastrar sala atentar-se a nome de salas repetidas: ".$e->getMessage() );
         return false;
     }
 }

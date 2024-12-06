@@ -4,7 +4,9 @@ include 'inc/query.php';
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
 
-if (!isset($_SESSION['id'])) {
+
+
+if  (!isset($_SESSION['id'])) {
     header("Location: login.php");
     exit();
 }
@@ -204,8 +206,7 @@ function createReservation() {
     }
 
     // Constrói strings de data e horários usando PHP e inputs
-    const data_inicio_str =
-        "<?php echo "$ano-$mes-$dia"; ?> " + dataInicioInput + ":00";
+    const data_inicio_str = "<?php echo "$ano-$mes-$dia"; ?> " + dataInicioInput + ":00";
     const duracao_str = duracaoInput;
 
     // Usando moment.js para calcular `data_inicio` e `data_fim`
@@ -228,6 +229,7 @@ function createReservation() {
             if (response.success) {
                 const reserva_id = response.reserva_id;
                 addMembers(reserva_id);
+                handleCreateUpdateEvent(data_inicio, data_fim, salaId);
             } else {
                 console.error("Erro ao criar a reserva:", response.message);
             }
@@ -237,6 +239,52 @@ function createReservation() {
         }
     });
 }
+
+function handleCreateUpdateEvent(data_inicio, data_fim, salaId) {
+   
+
+    var parameters = {     
+        title: $(salaId).val(), 
+        event_time: {
+            start_time: data_inicio.format("YYYY-MM-DDTHH:mm:ss"),
+            end_time: data_fim.format("YYYY-MM-DDTHH:mm:ss"),
+            event_date: 'never' // Não é um evento de dia inteiro
+        },
+        all_day: 0,
+        operation: $("#create").attr('data-operation'),
+        event_id: $("#create").attr('data-operation') == 'create' ? null : $("#create").attr('data-event-id'),
+        guests: membrosName
+    };
+
+    console.log(parameters.guests);
+    console.log(parameters.event_time.start_time);
+    console.log(parameters.event_time.end_time);
+
+    $("#create-update-event").attr('disabled', 'disabled');
+    $.ajax({
+        type: 'POST',
+        url: '../controle_salas/teste_api_calendar/calendar-api-tutorial-main/ajax.php',
+        data: { event_details: parameters },
+        dataType: 'json',
+        success: function(response) {
+            $("#create-update-event").removeAttr('disabled');
+            
+            if(parameters.operation == 'create') {
+                $("#create-update-event").text('Update Event').attr('data-event-id', response.event_id).attr('data-operation', 'update');
+                $("#delete-event").show();
+                alert('Event created with ID : ' + response.event_id);
+            }
+            else if(parameters.operation == 'update') {
+                alert('Event ID ' + parameters.event_id + ' updated');
+            }
+        },
+        error: function(xhr, status, error) {
+            $("#create-update-event").removeAttr('disabled');
+            alert('An error occurred');
+        }
+    });
+}
+
 
 function addMembers(reserva_id) {
     console.log("Membros recebidos:", membros); // Verifica se está correto
@@ -264,6 +312,5 @@ function addMembers(reserva_id) {
     });
 }
 
+
     </script>
-</body>
-</html>

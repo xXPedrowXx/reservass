@@ -234,7 +234,9 @@ $("#create-update-event").on('click', function(e) {
         event_id: $(this).attr('data-operation') == 'create' ? null : $(this).attr('data-event-id'),
         guests: $("#event-guests").val().split(',')
     };
-
+    console.log(parameters.event_time.start_time);
+    console.log(parameters.event_time.end_time);
+ 
     $("#create-update-event").attr('disabled', 'disabled');
     $.ajax({
         type: 'POST',

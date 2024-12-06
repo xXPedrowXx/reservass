@@ -1,11 +1,18 @@
 <?php
 
+require_once('teste_api_calendar/calendar-api-tutorial-main/google-calendar-api.php');
+require_once('teste_api_calendar/calendar-api-tutorial-main/settings.php');
+
 include 'inc/query.php'; 
 
-
-
-// Verificar se o usuário está logado
 if (isset($_SESSION['id'])) {
+    
+if(!isset($_SESSION['access_token'])) {
+	header('Location: ./teste_api_calendar/calendar-api-tutorial-main/google-login.php');
+	exit();	
+}
+
+
     
 
 $user_id = $_SESSION['id'];

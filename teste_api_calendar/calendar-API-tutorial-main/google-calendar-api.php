@@ -85,21 +85,21 @@ class GoogleCalendarApi
 			}, $guests);
 		}
 	
-		$ch = curl_init(); // Initializes a new session and return a cURL handle	
-		curl_setopt($ch, CURLOPT_URL, $url_events);		
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); // return the transfer as a string of the return value of curl_exec() instead of outputting it directly.	
-		curl_setopt($ch, CURLOPT_POST, 1); // http post	
+		$ch = curl_init(); // Initializes a new session and return a cURL handle    
+		curl_setopt($ch, CURLOPT_URL, $url_events);        
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); // return the transfer as a string of the return value of curl_exec() instead of outputting it directly.    
+		curl_setopt($ch, CURLOPT_POST, 1); // http post    
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE); // stop cURL from verifying the peer's certificate
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer '. $access_token, 'Content-Type: application/json'));	
-		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($curlPost));	
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer '. $access_token, 'Content-Type: application/json'));    
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($curlPost));    
 		$data = json_decode(curl_exec($ch), true);
-		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);		
+		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);        
 		if($http_code != 200) 
 			throw new Exception('Error : Failed to create event');
 	
 		return $data['id'];
 	}
-
+	
 	public function UpdateCalendarEvent($event_id, $calendar_id, $summary, $all_day, $event_time, $event_timezone, $access_token) {
 		$url_events = 'https://www.googleapis.com/calendar/v3/calendars/' . $calendar_id . '/events/' . $event_id;
 
