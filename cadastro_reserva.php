@@ -4,7 +4,7 @@ include 'inc/query.php';
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
 
-session_start();
+
 
 if (!isset($_SESSION['access_token'])) {
     header("Location: google-login.php");
@@ -192,7 +192,8 @@ select_sala($conn);
 
         document.getElementById("reservaForm").addEventListener("submit", function (event) {
             event.preventDefault();
-          //  createReservation();
+            //createCalendar()
+            createReservation();
         });
 
         function createReservation() {
@@ -271,51 +272,41 @@ select_sala($conn);
         console.error("Erro: algum campo obrigatório está vazio!");
         return;
     }
+    const nome_salas = "<?php echo $nome_sala; ?>";
 
     const data_inicio_str = "<?php echo "$ano-$mes-$dia"; ?>T" + dataInicioInput + ":00";
-    const data_inicio = moment(data_inicio_str);
-    const duracao = moment.duration(duracaoInput);
-    const data_fim = data_inicio.clone().add(duracao);
+    const data_inicio = moment(data_inicio_str, 'YYYY-MM-DDTHH:mm:ss');
+const duracao = moment.duration(duracaoInput); // Ensure duracaoInput is in a valid format like 'PT1H' for 1 hour
+const data_fim = data_inicio.clone().add(duracao);
 
+  
+ parameters = {     
+    title: nome_salas, 
+    event_time: {
+        start_time: moment(data_inicio, 'YYYY-MM-DDTHH:mm:ss').toISOString(),
+        end_time: moment(data_fim, 'YYYY-MM-DDTHH:mm:ss').toISOString()
+    },
+    all_day: 0,
+    operation: 'create',
+    guests: ['phlopes646@gmail.com'] // Ensure this is an array
+};
 
-    // nao funciona 
-    //parameters = {     
-     //   title: 'sala 1', 
-     //   event_time: {
-      //      start_time: '2024-12-09T08:00:00',
-     //       end_time: '2024-12-09T09:00:00'
-    //    },
-    //    all_day: 0,
-    //   operation: 'create',
-    //   guests: 'phlopes646@gmail.com'
-    //};
-
-
-    const parameters = {     
-        title: salaIdInput, 
-        event_time: {
-            start_time: data_inicio,
-            end_time: data_fim
-        },
-        all_day: 0,
-        operation: 'create',
-        guests: $("#membrosName").val().split(',')
-    };
-
-    $.ajax({
-        type: 'POST',
-        url: 'teste_api_calendar/calendar-API-tutorial-main/ajax.php',
-        data: { event_details: parameters },
-        dataType: 'json',
-        success: function(response) {
-            $("#create-event").removeAttr('disabled');
-            alert('Evento criado com ID: ' + response.event_id);
-        },
-        error: function(response) {
-            $("#create-event").removeAttr('disabled');
-            alert(response.responseJSON.message);
-        }
-    });
+$.ajax({
+    type: 'POST',
+    url: 'teste_api_calendar/calendar-API-tutorial-main/ajax.php',
+    data: { event_details: parameters },
+    dataType: 'json',
+    success: function(response) {
+        $("#create-event").removeAttr('disabled');
+        alert('Evento criado com ID: ' + response.event_id);
+    },
+    error: function(response) {
+        $("#create-event").removeAttr('disabled');
+        alert(response.responseJSON ? response.responseJSON.message : 'Erro desconhecido');
+        console.log(data_inicio);
+        console.log(data_fim);
+    }
+});
 };
 
         
