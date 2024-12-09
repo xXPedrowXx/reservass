@@ -4,9 +4,14 @@ include 'inc/query.php';
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
 
+session_start();
 
+if (!isset($_SESSION['access_token'])) {
+    header("Location: google-login.php");
+    exit();
+}
 
-if  (!isset($_SESSION['id'])) {
+if (!isset($_SESSION['id'])) {
     header("Location: login.php");
     exit();
 }
@@ -35,10 +40,12 @@ select_sala($conn);
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/css/login.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.1.9/jquery.datetimepicker.min.js"></script>
+
 </head>
 <body>
     <main>
-        <div class="page">
+        <div id="form-container">
             <form method="post" id="reservaForm" class="formLogin">
                 <h1 id="top">Reservar sala</h1>
 
@@ -105,33 +112,27 @@ select_sala($conn);
 
                 <label for="grupo_id">Membros</label>
                 <div class="dropdown">
-                <input onclick="myFunction('grupoDropdown')"  readonly placeholder="<?php echo !empty($name) ? $user_email : 'Escolha o(s) membro(s)'; ?>"  class="dropbtn"></input>
+                    <input onclick="myFunction('grupoDropdown')" readonly placeholder="Escolha o(s) membro(s)" class="dropbtn">
                     <div id="grupoDropdown" class="dropdown-content">
                         <input type="text" placeholder="aplique o filtro" id="grupoInput" onkeyup="filterFunction('grupoInput', 'grupoDropdown')" onclick="event.stopPropagation()">
                         <?php
-                  select_cadastro_membro($user_id,$conn);
-                  while ($sala = $resultado->fetch_assoc()) {
+                        select_cadastro_membro($user_id, $conn);
+                        while ($sala = $resultado->fetch_assoc()) {
                             echo '<a onclick="selectGroup(' . $sala['user_id'] . ', \'' . $sala['user_conta'] . '\')">' . $sala['user_conta'] . '</a>';
                         }
                         ?>
                     </div>
                 </div>
-                
-               
-                <input type="hidden" id="user_id" name="user_id" >
 
-            <p id="membrosList"></p>
+                <input type="hidden" id="user_id" name="user_id">
+                <p id="membrosList"></p>
 
                 <button type="submit" class="btn btn-primary">Reservar</button>
-
-                
             </form>
         </div>
-       
     </main>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-    <script >
-        
+    <script>
         function myFunction(dropdownId) {
             document.getElementById(dropdownId).classList.toggle("show");
         }
@@ -164,19 +165,18 @@ select_sala($conn);
         }
 
         let membros = [];
-let membrosName = [];
+        let membrosName = [];
 
-function selectGroup(id, name) {
-    if (!membros.includes(id) && !membrosName.includes(name)) {
-        document.getElementById("user_id").value = id;
-        document.querySelector(".dropbtn").innerText = name;
-        document.getElementById("grupoDropdown").classList.remove("show");
-        membros.push(id);
-        membrosName.push(name);
-        document.getElementById("membrosList").innerText = membrosName.join(' , ');
-        console.log(membrosName);
-    }
-}
+        function selectGroup(id, name) {
+            if (!membros.includes(id) && !membrosName.includes(name)) {
+                document.getElementById("user_id").value = id;
+                document.querySelector(".dropbtn").innerText = name;
+                document.getElementById("grupoDropdown").classList.remove("show");
+                membros.push(id);
+                membrosName.push(name);
+                document.getElementById("membrosList").innerText = membrosName.join(' , ');
+            }
+        }
 
         window.onclick = function(event) {
             if (!event.target.matches('.dropbtn') && !event.target.matches('#myInput')) {
@@ -189,12 +189,79 @@ function selectGroup(id, name) {
                 }
             }
         }
-        document.getElementById("reservaForm").addEventListener("submit", function (event) {
-   event.preventDefault(); // Evita envio padrão do formulário
 
-    createReservation();
-});
-function createReservation() {
+        document.getElementById("reservaForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+          //  createReservation();
+        });
+
+        function createReservation() {
+            const dataInicioInput = document.getElementById("data_inicio").value;
+            const duracaoInput = document.getElementById("duracao").value;
+            const salaIdInput = document.getElementById("sala_id").value;
+            const urlInput = document.getElementById("url").value;
+
+            if (!dataInicioInput || !duracaoInput || !salaIdInput) {
+                console.error("Erro: algum campo obrigatório está vazio!");
+                return;
+            }
+
+            const data_inicio_str = "<?php echo "$ano-$mes-$dia"; ?> " + dataInicioInput + ":00";
+            const duracao_str = duracaoInput;
+
+            const data_inicio = moment(data_inicio_str, "YYYY-MM-DD HH:mm:ss");
+            const duracao = moment.duration(duracao_str);
+            const data_fim = data_inicio.clone().add(duracao);
+
+            $.ajax({
+                type: "POST",
+                url: "create_reserva.php",
+                data: {
+                    data_inicio: data_inicio.format("YYYY-MM-DD HH:mm:ss"),
+                    data_fim: data_fim.format("YYYY-MM-DD HH:mm:ss"),
+                    salaId: salaIdInput,
+                    url: urlInput
+                },
+                success: function(response) {
+                    if (response.success) {
+                        const reserva_id = response.reserva_id;
+                        addMembers(reserva_id);
+                        createCalendar()
+                       
+                    } else {
+                        console.error("Erro ao criar a reserva:", response.message);
+                    }
+                    
+                },
+                error: function(xhr, status, error) {
+                    console.error("Erro na requisição:", xhr.responseText);
+                }
+            });
+        }
+
+        function addMembers(reserva_id) {
+            $.ajax({
+                type: "POST",
+                url: "post_membro.php",
+                data: {
+                    values: membros,
+                    reserva_id: reserva_id
+                },
+                success: function(response) {
+                    if (response.success) {
+                        window.location.href = 'calendario.php';
+                    } else {
+                        console.error("Erro ao adicionar membros:", response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Erro na requisição:", xhr.responseText);
+                }
+            });
+        }
+
+
+        function createCalendar() {
     const dataInicioInput = document.getElementById("data_inicio").value;
     const duracaoInput = document.getElementById("duracao").value;
     const salaIdInput = document.getElementById("sala_id").value;
@@ -205,112 +272,53 @@ function createReservation() {
         return;
     }
 
-    // Constrói strings de data e horários usando PHP e inputs
-    const data_inicio_str = "<?php echo "$ano-$mes-$dia"; ?> " + dataInicioInput + ":00";
-    const duracao_str = duracaoInput;
-
-    // Usando moment.js para calcular `data_inicio` e `data_fim`
-    const data_inicio = moment(data_inicio_str, "YYYY-MM-DD HH:mm:ss");
-    const duracao = moment.duration(duracao_str);
+    const data_inicio_str = "<?php echo "$ano-$mes-$dia"; ?>T" + dataInicioInput + ":00";
+    const data_inicio = moment(data_inicio_str);
+    const duracao = moment.duration(duracaoInput);
     const data_fim = data_inicio.clone().add(duracao);
-    const salaId = document.getElementById("sala_id").value;
 
-    $.ajax({
-        type: "POST",
-        url: "create_reserva.php",
-        data: {
-            data_inicio: data_inicio.format("YYYY-MM-DD HH:mm:ss"),
-            data_fim: data_fim.format("YYYY-MM-DD HH:mm:ss"),
-            salaId: salaId,
-            url: urlInput
-        },
-        success: function(response) {
-            console.log("Resposta do servidor:", response);
-            if (response.success) {
-                const reserva_id = response.reserva_id;
-                addMembers(reserva_id);
-                handleCreateUpdateEvent(data_inicio, data_fim, salaId);
-            } else {
-                console.error("Erro ao criar a reserva:", response.message);
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error("Erro na requisição:", xhr.responseText); // Mostra o erro retornado
-        }
-    });
-}
 
-function handleCreateUpdateEvent(data_inicio, data_fim, salaId) {
-   
+    // nao funciona 
+    //parameters = {     
+     //   title: 'sala 1', 
+     //   event_time: {
+      //      start_time: '2024-12-09T08:00:00',
+     //       end_time: '2024-12-09T09:00:00'
+    //    },
+    //    all_day: 0,
+    //   operation: 'create',
+    //   guests: 'phlopes646@gmail.com'
+    //};
 
-    var parameters = {     
-        title: $(salaId).val(), 
+
+    const parameters = {     
+        title: salaIdInput, 
         event_time: {
-            start_time: data_inicio.format("YYYY-MM-DDTHH:mm:ss"),
-            end_time: data_fim.format("YYYY-MM-DDTHH:mm:ss"),
-            event_date: 'never' // Não é um evento de dia inteiro
+            start_time: data_inicio,
+            end_time: data_fim
         },
         all_day: 0,
-        operation: $("#create").attr('data-operation'),
-        event_id: $("#create").attr('data-operation') == 'create' ? null : $("#create").attr('data-event-id'),
-        guests: membrosName
+        operation: 'create',
+        guests: $("#membrosName").val().split(',')
     };
 
-    console.log(parameters.guests);
-    console.log(parameters.event_time.start_time);
-    console.log(parameters.event_time.end_time);
-
-    $("#create-update-event").attr('disabled', 'disabled');
     $.ajax({
         type: 'POST',
-        url: '../controle_salas/teste_api_calendar/calendar-api-tutorial-main/ajax.php',
+        url: 'teste_api_calendar/calendar-API-tutorial-main/ajax.php',
         data: { event_details: parameters },
         dataType: 'json',
         success: function(response) {
-            $("#create-update-event").removeAttr('disabled');
-            
-            if(parameters.operation == 'create') {
-                $("#create-update-event").text('Update Event').attr('data-event-id', response.event_id).attr('data-operation', 'update');
-                $("#delete-event").show();
-                alert('Event created with ID : ' + response.event_id);
-            }
-            else if(parameters.operation == 'update') {
-                alert('Event ID ' + parameters.event_id + ' updated');
-            }
+            $("#create-event").removeAttr('disabled');
+            alert('Evento criado com ID: ' + response.event_id);
         },
-        error: function(xhr, status, error) {
-            $("#create-update-event").removeAttr('disabled');
-            alert('An error occurred');
+        error: function(response) {
+            $("#create-event").removeAttr('disabled');
+            alert(response.responseJSON.message);
         }
     });
-}
+};
 
-
-function addMembers(reserva_id) {
-    console.log("Membros recebidos:", membros); // Verifica se está correto
-    
-
-    $.ajax({
-        type: "POST",
-        url: "post_membro.php",
-        data: {
-            values: membros,
-            reserva_id: reserva_id
-        },
-        success: function(response) {
-            console.log("Resposta do servidor:", response);
-            if (response.success) {
-                window.location.href = 'calendario.php';
-            } else {
-                console.error("Erro ao adicionar membros:", response.message);
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error("Erro na requisição:", xhr.responseText); // Mostra o erro retornado
-        }
         
-    });
-}
-
-
     </script>
+</body>
+</html>
