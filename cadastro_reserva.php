@@ -192,7 +192,7 @@ select_sala($conn);
 
         document.getElementById("reservaForm").addEventListener("submit", function (event) {
             event.preventDefault();
-            //createCalendar()
+   // createCalendar()
             createReservation();
         });
 
@@ -227,7 +227,7 @@ select_sala($conn);
                     if (response.success) {
                         const reserva_id = response.reserva_id;
                         addMembers(reserva_id);
-                        createCalendar()
+                        createCalendar(reserva_id)
                        
                     } else {
                         console.error("Erro ao criar a reserva:", response.message);
@@ -262,11 +262,11 @@ select_sala($conn);
         }
 
 
-        function createCalendar() {
+        function createCalendar(reserva_id) {
     const dataInicioInput = document.getElementById("data_inicio").value;
     const duracaoInput = document.getElementById("duracao").value;
     const salaIdInput = document.getElementById("sala_id").value;
-    const urlInput = document.getElementById("url").value;
+ const membrosList = document.getElementById("membrosList").innerText;
 
     if (!dataInicioInput || !duracaoInput || !salaIdInput) {
         console.error("Erro: algum campo obrigatório está vazio!");
@@ -278,6 +278,7 @@ select_sala($conn);
     const data_inicio = moment(data_inicio_str, 'YYYY-MM-DDTHH:mm:ss');
 const duracao = moment.duration(duracaoInput); // Ensure duracaoInput is in a valid format like 'PT1H' for 1 hour
 const data_fim = data_inicio.clone().add(duracao);
+ const guests = membrosList.split(',').map(email => email.trim());
 
   
  parameters = {     
@@ -288,7 +289,9 @@ const data_fim = data_inicio.clone().add(duracao);
     },
     all_day: 0,
     operation: 'create',
-    guests: ['phlopes646@gmail.com'] // Ensure this is an array
+ guests: guests ,
+ reserva_id: reserva_id
+ 
 };
 
 $.ajax({
@@ -299,17 +302,22 @@ $.ajax({
     success: function(response) {
         $("#create-event").removeAttr('disabled');
         alert('Evento criado com ID: ' + response.event_id);
+      
     },
     error: function(response) {
         $("#create-event").removeAttr('disabled');
         alert(response.responseJSON ? response.responseJSON.message : 'Erro desconhecido');
         console.log(data_inicio);
         console.log(data_fim);
+       
     }
 });
+
+
 };
 
         
     </script>
+
 </body>
 </html>

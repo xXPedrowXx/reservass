@@ -19,7 +19,6 @@ if(!isset($_SESSION['access_token'])) {
 }
 
 
-
 $user_id = $_SESSION['id'];
 $id = $user_id;
 

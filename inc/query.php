@@ -252,31 +252,19 @@ $sql->close();
 
 
 
-function insertM2($user_id, $data_inicio, $data_fim, $sala_id, $conn) {
+function insertM2($data_inicio, $data_fim, $nome_sala, $conn) {
     // Selecionar o id da reserva
-    $sql = "SELECT id FROM reservas WHERE sala_id = ? AND data_inicio = ? AND data_fim = ? AND id IS NOT NULL";
+    $sql = "SELECT r.id FROM reservas r 
+            JOIN salas s ON r.sala_id = s.id 
+            WHERE s.nome_sala = ? AND r.data_inicio = ? AND r.data_fim = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("iss", $sala_id, $data_inicio, $data_fim);
+    $stmt->bind_param("sss", $nome_sala, $data_inicio, $data_fim);
     $stmt->execute();
     $result = $stmt->get_result();
     $reserva = $result->fetch_assoc();
     $stmt->close();
 
-    if ($reserva) {
-        $reserva_id = $reserva['id'];
-
-        // Inserir o membro
-        try {
-            $sql = $conn->prepare("INSERT INTO membros (user_id, reserva_id) VALUES (?, ?)");
-            $sql->bind_param("ii", $user_id, $reserva_id);
-            $sql->execute();
-            $sql->close();
-        } catch (mysqli_sql_exception $e) {
-            handleError("Erro ao cadastrar membro atentar-se aos usuarios já adicionados: " . $e->getMessage());
-        }
-    } else {
-        handleError("Reserva não encontrada.");
-    }
+    return $reserva['id'];
 }
 
 function insertM ($user_id,$reserva_id,$conn) {
@@ -507,7 +495,31 @@ function confirmação($id,$conn) {
     $stmt->close();
 }
 
+function update_C($reserva_id, $event_id, $conn) {
+    try {
+        verificarPermissao($conn);
+        $stmt = $conn->prepare("UPDATE reservas SET url = ? WHERE id = ?");
+        $stmt->bind_param("ii", $event_id, $reserva_id);
 
+        $stmt->execute();
+    } catch (mysqli_sql_exception $e) {
+        handleError("Erro ao atualizar sala atentar-se a nome de salas repetidas: " . $e->getMessage());
+    }
+
+    $stmt->close();
+}
+function insertEvent($event, $conn) {
+    try {
+        $stmt = $conn->prepare("INSERT INTO calendar_api (titulo, event_time) VALUES (?, ?)");
+        $stmt->bind_param("ss", $event['title'], $event['event_time']);
+        $stmt->execute();
+    } catch (mysqli_sql_exception $e) {
+        handleError("Erro ao inserir evento: " . $e->getMessage());
+    } finally {
+        $stmt->close();
+        $conn->close();
+    }
+}
 
 function update_U($conta,$email,$senha ,$id,$conn) {
  
