@@ -292,7 +292,7 @@ function insertR($user_id, $sala_id, $data_inicio, $data_fim, $url, $conn) {
   
     try {
         if (empty(checkAvailability($conn, $sala_id, $data_inicio, $data_fim))) {
-            $sql = $conn->prepare("INSERT INTO reservas (user_id, sala_id, data_inicio, data_fim, url, confirmacao, aviso_1hr, aviso_now, aviso_24hrs) VALUES (?, ?, ?, ?, ?, 0, 0, 0, 0)");
+            $sql = $conn->prepare("INSERT INTO reservas (user_id, sala_id, data_inicio, data_fim, url, confirmacao, aviso_1hr, aviso_now, aviso_24hrs,calendar_id) VALUES (?, ?, ?, ?, ?, 0, 0, 0, 0,0)");
             $sql->bind_param("iisss", $user_id, $sala_id, $data_inicio, $data_fim, $url);
 
             if ($data_inicio == $data_fim) {
@@ -498,8 +498,8 @@ function confirmação($id,$conn) {
 function update_C($reserva_id, $event_id, $conn) {
     try {
         verificarPermissao($conn);
-        $stmt = $conn->prepare("UPDATE reservas SET url = ? WHERE id = ?");
-        $stmt->bind_param("ii", $event_id, $reserva_id);
+        $stmt = $conn->prepare("UPDATE reservas SET calendar_id = ? WHERE id = ?");
+        $stmt->bind_param("si", $event_id, $reserva_id);
 
         $stmt->execute();
     } catch (mysqli_sql_exception $e) {
@@ -508,18 +508,7 @@ function update_C($reserva_id, $event_id, $conn) {
 
     $stmt->close();
 }
-function insertEvent($event, $conn) {
-    try {
-        $stmt = $conn->prepare("INSERT INTO calendar_api (titulo, event_time) VALUES (?, ?)");
-        $stmt->bind_param("ss", $event['title'], $event['event_time']);
-        $stmt->execute();
-    } catch (mysqli_sql_exception $e) {
-        handleError("Erro ao inserir evento: " . $e->getMessage());
-    } finally {
-        $stmt->close();
-        $conn->close();
-    }
-}
+
 
 function update_U($conta,$email,$senha ,$id,$conn) {
  
@@ -605,41 +594,61 @@ catch (mysqli_sql_exception $e) {
     }
 
 
-
     function delete_reserva($reserva_id, $conn) {
-    
         try {
             $sql = "DELETE FROM membros WHERE reserva_id=?";
             $stmt3 = $conn->prepare($sql);
             $stmt3->bind_param("i", $reserva_id);
             $stmt3->execute();
-        } 
-        catch (mysqli_sql_exception $e) {   
+            $stmt3->close();
+        } catch (mysqli_sql_exception $e) {   
             handleError("Erro ao deletar membros. Atentar-se se esse item está sendo usado em outro relacionamento: " );
         }
-        $stmt3->close();
     
         try {
             $sql = "DELETE FROM user_temp WHERE reserva_id=?";
             $stmt4 = $conn->prepare($sql);
             $stmt4->bind_param("i", $reserva_id);
             $stmt4->execute();
-        } 
-        catch (mysqli_sql_exception $e) {   
+            $stmt4->close();
+        } catch (mysqli_sql_exception $e) {   
             handleError("Erro ao deletar usuários temporários. Atentar-se se esse item está sendo usado em outro relacionamento: " );
         }
-        $stmt4->close();
     
+        // Seleciona a reserva pelo ID antes de deletar
+        selectID('reservas', $reserva_id, $conn);
+        global $resultado;
+        $reserva = $resultado->fetch_assoc();
+        $data_inicio = $reserva['data_inicio'];
+        $data_fim = $reserva['data_fim'];
+        $sala_id = $reserva['sala_id'];
+    
+        // Seleciona o nome da sala pelo ID
+        selectID('salas', $sala_id, $conn);
+        $sala = $resultado->fetch_assoc();
+        $nome_sala = $sala['nome_sala'];
+    
+        // Deleta a reserva
         try {
             $sql = "DELETE FROM reservas WHERE id=?";
             $stmt2 = $conn->prepare($sql);
             $stmt2->bind_param("i", $reserva_id);
             $stmt2->execute();
-        } 
-        catch (mysqli_sql_exception $e) {   
+            $stmt2->close();
+        } catch (mysqli_sql_exception $e) {   
             handleError("Erro ao deletar reservas. Atentar-se se esse item está sendo usado em outro relacionamento: " );
         }
-        $stmt2->close();
+    
+        // Deleta o evento do calendar_api
+        try {
+            $sql = "DELETE FROM calendar_api WHERE titulo = ? AND data_inicio = ? AND data_fim = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("sss", $nome_sala, $data_inicio, $data_fim);
+            $stmt->execute();
+            $stmt->close();
+        } catch (mysqli_sql_exception $e) {
+            handleError("Erro ao deletar evento do calendar_api.");
+        }
     }
 
         function delete_hour($conn) {

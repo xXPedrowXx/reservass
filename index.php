@@ -1,14 +1,14 @@
 <?php
 
-require_once('teste_api_calendar/calendar-api-tutorial-main/google-calendar-api.php');
-require_once('teste_api_calendar/calendar-api-tutorial-main/settings.php');
+require_once('teste_api_calendar/calendar-API-tutorial-main/google-calendar-api.php');
+require_once('teste_api_calendar/calendar-API-tutorial-main/settings.php');
 
 include 'inc/query.php'; 
 
 if (isset($_SESSION['id'])) {
     
 if(!isset($_SESSION['access_token'])) {
-	header('Location: ./teste_api_calendar/calendar-api-tutorial-main/google-login.php');
+	header('Location: ./teste_api_calendar/calendar-API-tutorial-main/google-login.php');
 	exit();	
 }
 

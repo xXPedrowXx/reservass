@@ -81,10 +81,18 @@ select_sala($conn);
                     $times = [];
                     $todayArray = getdate();
                     $todayD = $todayArray['mday'];
-                    $todayH = $todayArray['hours'] -  5; // 4 de fuso e 1 de tolerancias
+                    
+                    // Ajusta o fuso horário e adiciona 1 hora de tolerância
+                    $timezone = new DateTimeZone('America/Sao_Paulo'); // Substitua pelo fuso horário correto
+                    $now = new DateTime('now', $timezone);
+                    $now->modify('-4 hours'); // Ajusta o fuso horário
+                    $now->modify('+1 hour'); // Adiciona 1 hora de tolerância
+                    $todayH = $now->format('G'); // Formata a hora sem zero à esquerda
+                    
                     if ($todayD != $dia) {
                         $todayH = 7;
                     }
+                    
                     for ($i = $todayH; $i < 21; $i++) {
                         $time = sprintf('%02d:00', $i);
                         if (isAvailable($time, $reservas)) {

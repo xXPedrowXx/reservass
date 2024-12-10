@@ -1,7 +1,9 @@
 <?php
 
+
 class GoogleCalendarApi
 {
+	
 	public function GetAccessToken($client_id, $redirect_uri, $client_secret, $code) {	
 		$url = 'https://accounts.google.com/o/oauth2/token';			
 		
@@ -94,36 +96,65 @@ class GoogleCalendarApi
 		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($curlPost));    
 		$data = json_decode(curl_exec($ch), true);
 		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);        
-		if($http_code != 200) 
-			throw new Exception('Error : Failed to create event');
+		if($http_code != 200) {
+			throw new Exception('Error : Failed to create event');}
 	
+		
+			$servername = "localhost";
+			$username = "root";
+			$password = "";
+			$dbname = "controle_salas";
+			
+			$conn = new mysqli($servername, $username, $password, $dbname);
+			if ($conn->connect_error) {
+				die("Connection failed: " . $conn->connect_error);
+			}
+			function insertEvent($event_id, $summary, $event_time, $conn) {
+				// Lógica da função usando $conn
+				$sql = "INSERT INTO calendar_api (event_id, titulo, data_inicio, data_fim) VALUES (?, ?, ?, ?)";
+				$stmt = $conn->prepare($sql);
+				$stmt->bind_param("ssss", $event_id, $summary, $event_time['start_time'], $event_time['end_time']);
+				$stmt->execute();
+				$stmt->close();
+			}
+			
+			insertEvent($data['id'], $summary, $event_time, $conn);
+    
 		return $data['id'];
 	}
-	
-	public function UpdateCalendarEvent($event_id, $calendar_id, $summary, $all_day, $event_time, $event_timezone, $access_token) {
-		$url_events = 'https://www.googleapis.com/calendar/v3/calendars/' . $calendar_id . '/events/' . $event_id;
 
-		$curlPost = array('summary' => $summary);
-		if($all_day == 1) {
-			$curlPost['start'] = array('date' => $event_time['event_date']);
-			$curlPost['end'] = array('date' => $event_time['event_date']);
-		}
-		else {
-			$curlPost['start'] = array('dateTime' => $event_time['start_time'], 'timeZone' => $event_timezone);
-			$curlPost['end'] = array('dateTime' => $event_time['end_time'], 'timeZone' => $event_timezone);
-		}
-		$ch = curl_init();		
-		curl_setopt($ch, CURLOPT_URL, $url_events);		
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);		
-		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');		
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer '. $access_token, 'Content-Type: application/json'));	
-		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($curlPost));	
-		$data = json_decode(curl_exec($ch), true);
-		$http_code = curl_getinfo($ch,CURLINFO_HTTP_CODE);		
-		if($http_code != 200) 
-			throw new Exception('Error : Failed to update event');
-	}
+	
+	
+	
+public function UpdateCalendarEvent($event_id, $calendar_id, $summary, $all_day, $event_time, $event_timezone, $access_token, $attendees = array()) {
+    $url_events = 'https://www.googleapis.com/calendar/v3/calendars/' . $calendar_id . '/events/' . $event_id;
+
+    $curlPost = array('summary' => $summary);
+    if($all_day == 1) {
+        $curlPost['start'] = array('date' => $event_time['event_date']);
+        $curlPost['end'] = array('date' => $event_time['event_date']);
+    }
+    else {
+        $curlPost['start'] = array('dateTime' => $event_time['start_time'], 'timeZone' => $event_timezone);
+        $curlPost['end'] = array('dateTime' => $event_time['end_time'], 'timeZone' => $event_timezone);
+    }
+
+    if (!empty($attendees)) {
+        $curlPost['attendees'] = $attendees;
+    }
+
+    $ch = curl_init();        
+    curl_setopt($ch, CURLOPT_URL, $url_events);        
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);        
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');        
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer '. $access_token, 'Content-Type: application/json'));    
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($curlPost));    
+    $data = json_decode(curl_exec($ch), true);
+    $http_code = curl_getinfo($ch,CURLINFO_HTTP_CODE);        
+    if($http_code != 200) 
+        throw new Exception('Error : Failed to update event');
+}
 
 	public function DeleteCalendarEvent($event_id, $calendar_id, $access_token) {
 		$url_events = 'https://www.googleapis.com/calendar/v3/calendars/' . $calendar_id . '/events/' . $event_id;

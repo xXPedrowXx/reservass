@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS reservas (
     aviso_1hr BOOLEAN,
     aviso_now BOOLEAN,
     aviso_24hrs BOOLEAN,
-    calendar_id int ,
+    calendar_id varchar(255) ,
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (sala_id) REFERENCES salas(id)
 );

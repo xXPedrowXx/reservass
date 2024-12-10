@@ -3,6 +3,7 @@ session_start();
 header('Content-type: application/json');
 
 
+
 include './inc/query.php'; 
 
 require_once('google-calendar-api.php');
@@ -11,7 +12,7 @@ try {
     // Get event details
     $event = $_POST['event_details'];
     $capi = new GoogleCalendarApi();
-
+    $reserva_id = $_POST['reserva_id'];
     
     // Get user calendar timezone
     if(!isset($_SESSION['user_timezone']))
@@ -24,7 +25,6 @@ try {
 
     // Create event on primary calendar
     $event_id = $capi->CreateCalendarEvent('primary', $event['title'], false, null, null, $event['event_time'], $_SESSION['user_timezone'], $_SESSION['access_token'], $event['guests']);
-
 
    
 
