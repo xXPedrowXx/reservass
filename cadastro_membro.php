@@ -166,34 +166,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         });
 
         function addMembers() {
-            console.log("Membros recebidos:", membros); // Verifica se está correto
-            console.log("Membros externos recebidos:", membrosExternos); // Verifica se está correto
-            if ((!membros || membros.length === 0) && (!membrosExternos || membrosExternos.length === 0)) {
-                console.error("Erro: membros está vazio ou indefinido!");
-                return;
-            }
+    console.log("Membros recebidos:", membros); // Verifica se está correto
+    console.log("Membros externos recebidos:", membrosExternos); // Verifica se está correto
+    if ((!membros || membros.length === 0) && (!membrosExternos || membrosExternos.length === 0)) {
+        console.error("Erro: membros está vazio ou indefinido!");
+        return;
+    }
 
-            $.ajax({
-                type: "POST",
-                url: "post_membro.php",
-                data: {
-                    values: membros,
-                    externos: membrosExternos,
-                    reserva_id: <?php echo $reserva_id; ?>
-                },
-                success: function(response) {
-                    console.log("Resposta do servidor:", response);
-                    if (response.success) {
-                        window.location.href = 'calendario.php';
-                    } else {
-                        console.error("Erro ao adicionar membros:", response.message);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error("Erro na requisição:", xhr.responseText); // Mostra o erro retornado
-                }
-            });
+    const externos = document.getElementById("membrosEList").innerText.split(',').map(email => email.trim());
+
+    $.ajax({
+        type: "POST",
+        url: "post_membro.php",
+        data: {
+            values: membros,
+            externos: externos,
+            reserva_id: <?php echo $reserva_id; ?>
+        },
+        success: function(response) {
+            console.log("Resposta do servidor:", response);
+            if (response.success) {
+                window.location.href = 'calendario.php';
+            } else {
+                console.error("Erro ao adicionar membros:", response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Erro na requisição:", xhr.responseText); // Mostra o erro retornado
         }
+    });
+}
     </script>
 </body>
 </html>

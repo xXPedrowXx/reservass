@@ -87,7 +87,10 @@ select_sala($conn);
                     $now = new DateTime('now', $timezone);
                     $now->modify('-4 hours'); // Ajusta o fuso horário
                     $now->modify('+1 hour'); // Adiciona 1 hora de tolerância
-                    $todayH = $now->format('G'); // Formata a hora sem zero à esquerda
+                    $todayH = $now->format('G');
+                    if ($todayH < 8){
+                        $todayH = 7;
+                    } ;// Formata a hora sem zero à esquerda
                     
                     if ($todayD != $dia) {
                         $todayH = 7;

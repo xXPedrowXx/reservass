@@ -11,7 +11,7 @@ if(isset($_GET['id'])) {
     global $resultado;
     $reserva = $resultado->fetch_assoc();
     if (!$reserva) {
-        die("Reserva não encontrada.");
+       // die("Reserva não encontrada.");
     }
 
     // Ajusta o fuso horário
@@ -31,7 +31,7 @@ if(isset($_GET['id'])) {
     selectID('salas', $sala_id, $conn);
     $sala = $resultado->fetch_assoc();
     if (!$sala) {
-        die("Sala não encontrada.");
+       // die("Sala não encontrada.");
     }
     $nome_sala = $sala['nome_sala'];
 
@@ -46,7 +46,7 @@ if(isset($_GET['id'])) {
 
     if (!$event) {
       
-        die("Evento não encontrado no calendar_api.");
+       // die("Evento não encontrado no calendar_api.");
        
     }
     $event_id = $event['event_id'];
@@ -62,7 +62,7 @@ if(isset($_GET['id'])) {
         echo '<br>';
         echo $_SESSION['access_token'];
         echo '<br>';
-        die("Erro ao excluir evento do Google Calendar: " . $e->getMessage());
+       // die("Erro ao excluir evento do Google Calendar: " . $e->getMessage());
     }
 
     // Chama a função para excluir a reserva

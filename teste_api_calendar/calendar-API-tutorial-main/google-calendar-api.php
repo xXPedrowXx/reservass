@@ -126,35 +126,61 @@ class GoogleCalendarApi
 	
 	
 	
-public function UpdateCalendarEvent($event_id, $calendar_id, $summary, $all_day, $event_time, $event_timezone, $access_token, $attendees = array()) {
-    $url_events = 'https://www.googleapis.com/calendar/v3/calendars/' . $calendar_id . '/events/' . $event_id;
-
-    $curlPost = array('summary' => $summary);
-    if($all_day == 1) {
-        $curlPost['start'] = array('date' => $event_time['event_date']);
-        $curlPost['end'] = array('date' => $event_time['event_date']);
-    }
-    else {
-        $curlPost['start'] = array('dateTime' => $event_time['start_time'], 'timeZone' => $event_timezone);
-        $curlPost['end'] = array('dateTime' => $event_time['end_time'], 'timeZone' => $event_timezone);
-    }
-
-    if (!empty($attendees)) {
-        $curlPost['attendees'] = $attendees;
-    }
-
-    $ch = curl_init();        
-    curl_setopt($ch, CURLOPT_URL, $url_events);        
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);        
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');        
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer '. $access_token, 'Content-Type: application/json'));    
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($curlPost));    
-    $data = json_decode(curl_exec($ch), true);
-    $http_code = curl_getinfo($ch,CURLINFO_HTTP_CODE);        
-    if($http_code != 200) 
-        throw new Exception('Error : Failed to update event');
-}
+	public function UpdateCalendarEvent($event_id, $calendar_id, $summary, $all_day, $event_time, $event_timezone, $access_token, $attendees = array()) {
+		$url_events = 'https://www.googleapis.com/calendar/v3/calendars/' . $calendar_id . '/events/' . $event_id;
+	
+		// Verifique se as variáveis de data e hora estão corretamente formatadas
+		$start_time = $event_time['start_time']; // Ex: "2024-12-12T10:00:00"
+		$end_time = $event_time['end_time']; // Ex: "2024-12-12T12:00:00"
+		
+		if ($all_day == 1) {
+			// Se for um evento de dia inteiro, usamos apenas a data
+			$curlPost['start'] = array('date' => $event_time['event_date']);
+			$curlPost['end'] = array('date' => $event_time['event_date']);
+		} else {
+			// Para evento com horário específico, usamos dateTime e timeZone
+			// Certifique-se de que as datas estão no formato correto (ISO 8601)
+			$curlPost['start'] = array('dateTime' => $start_time, 'timeZone' => $event_timezone);
+			$curlPost['end'] = array('dateTime' => $end_time, 'timeZone' => $event_timezone);
+		}
+	
+		// Adicionar os convidados (se houver)
+		if (!empty($attendees)) {
+			$curlPost['attendees'] = array_map(function($email) {
+				return ['email' => trim($email)];
+			}, $attendees);
+		}
+	
+		// Construir o corpo da requisição
+		$curlPost['summary'] = $summary;
+	
+		// Inicializa a requisição cURL
+		$ch = curl_init();        
+		curl_setopt($ch, CURLOPT_URL, $url_events);        
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);        
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');        
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer '. $access_token, 'Content-Type: application/json'));    
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($curlPost));    
+	
+		// Executa a requisição e captura a resposta
+		$data = curl_exec($ch);
+		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	
+		// Verifica se houve erro na requisição
+		if ($http_code != 200) {
+			// Loga o erro e a resposta completa para depuração
+			error_log("Erro ao atualizar evento: HTTP Code: $http_code, Resposta: $data");
+	
+			// Lança uma exceção com detalhes do erro
+			throw new Exception("Error: Failed to update event. HTTP Code: $http_code, Response: " . json_encode($data));
+		}
+	
+		// Fecha a conexão cURL
+		curl_close($ch);
+	}
+	
+	
 
 	public function DeleteCalendarEvent($event_id, $calendar_id, $access_token) {
 		$url_events = 'https://www.googleapis.com/calendar/v3/calendars/' . $calendar_id . '/events/' . $event_id;
@@ -169,7 +195,34 @@ public function UpdateCalendarEvent($event_id, $calendar_id, $summary, $all_day,
 		$http_code = curl_getinfo($ch,CURLINFO_HTTP_CODE);
 		if($http_code != 204) 
 			throw new Exception('Error : Failed to delete event');
-	}
+	
+
+			$servername = "localhost";
+			$username = "root";
+			$password = "";
+			$dbname = "controle_salas";
+			
+			$conn = new mysqli($servername, $username, $password, $dbname);
+			if ($conn->connect_error) {
+				die("Connection failed: " . $conn->connect_error);
+			}
+
+
+
+			function DeleteEvent($event_id, $conn) {
+				// Lógica da função usando $conn
+				$sql = "DELETE FROM calendar_api WHERE event_id = ?";
+				$stmt = $conn->prepare($sql);
+				$stmt->bind_param("s", $event_id);
+				$stmt->execute();
+				$stmt->close();
+			}
+			
+			DeleteEvent($event_id,$conn);
+    
+		}
+
+
 }
 
 ?>
