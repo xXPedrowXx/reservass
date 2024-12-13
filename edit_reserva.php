@@ -68,18 +68,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['event_details'])) {
             $event_details['event_time'], 
             $_SESSION['user_timezone'], 
             $_SESSION['access_token'], 
-            ['a41992215756@gmail.com','phlopes646@gmail.com']  // Substituir com os emails desejados
+            [ $_SESSION['email']]  
         );
 
-        // Atualiza as informações na tabela calendar_api
-        $query = "UPDATE calendar_api SET titulo = ?, data_inicio = ?, data_fim = ? WHERE event_id = ?";
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param("ssss", $title, $data_inicio, $data_fim, $event_id);
-        $stmt->execute();
-
-        if ($stmt->error) {
-            throw new Exception("Erro na consulta UPDATE: " . $stmt->error);
-        }
+        updateCalendarEvent($conn, $title, $data_inicio, $data_fim, $event_id);
 
         // Converte as datas ajustadas para o formato de string antes de chamar update_R
         $data_inicio_str = $data_inicio_obj->format('Y-m-d H:i:s');

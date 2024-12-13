@@ -27,13 +27,15 @@ if ($resultado && $resultado->num_rows > 0) {
   $nome = $row['conta'];
   $numero = $row['codigo_verificação'];}
 
-
   $mail->isSMTP();                                          //Send using SMTP
-  $mail->Host       = '';             //Set the SMTP server to send through
+  $mail->Host       = 'smtp.acessoseguro.net';             //Set the SMTP server to send through
   $mail->SMTPAuth   = true;       
   $mail->Port       = 465;                                 //Enable SMTP authentication
-  $mail->Username   = '';                     //SMTP username
-  $mail->Password   = '';  
+                //SMTP password
+
+ $mail->Username   = 'integracao@apklog.com.br';                     //SMTP username
+ $mail->Password   = 'Apkintegracao2024@';  
+
   $mail->CharSet    = 'utf8';                               // utf8 / iso-8859-1
   $mail->SMTPSecure = "ssl";
  
@@ -406,5 +408,5 @@ if ($resultado && $resultado->num_rows > 0) {
     echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
 }
 
-//header("Location: primeiro_login.php");
+header("Location: primeiro_login.php");
 

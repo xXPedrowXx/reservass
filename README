@@ -32,5 +32,7 @@ Via IP: https://SEU_IP/controle_salas/login.php
 
 📌 Lembre-se de configurar seu SMTP nos arquivos 'email_convite.php' e 'email_confirmacao.php' para que os emails sejam enviados corretamente
 
-📌 Lembre-se de instalar o composer e o phpmailer para que o envio seja realizado com sucesso 
+📌 Lembre-se de instalar o composer e o phpmailer para que o envio seja realizado com sucesso
+    
+                            composer require phpmailer/phpmailer
 

@@ -330,6 +330,34 @@ function getCalendarEvent($data_inicio_api, $data_fim_api, $conn) {
     }
 }
 
+function updateCalendarEvent($conn, $title, $data_inicio, $data_fim, $event_id) {
+    $query = "UPDATE calendar_api SET titulo = ?, data_inicio = ?, data_fim = ? WHERE event_id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("ssss", $title, $data_inicio, $data_fim, $event_id);
+    $stmt->execute();
+
+    if ($stmt->error) {
+        throw new Exception("Erro na consulta UPDATE: " . $stmt->error);
+    }
+
+    $stmt->close();
+}
+
+function getEventId($conn, $nome_sala, $data_inicio, $data_fim) {
+    $sql = "SELECT event_id FROM calendar_api WHERE titulo = ? AND data_inicio = ? AND data_fim = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("sss", $nome_sala, $data_inicio, $data_fim);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $event = $result->fetch_assoc();
+    $stmt->close();
+
+    if (!$event) {
+        return null; // Evento não encontrado
+    }
+
+    return $event['event_id'];
+}
 // Função para buscar emails dos membros e usuários
 function getEmails($reserva_id, $conn) {
     $query = "SELECT email FROM users WHERE id IN (SELECT user_id FROM membros WHERE reserva_id = $reserva_id)";

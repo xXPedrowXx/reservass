@@ -35,21 +35,9 @@ if(isset($_GET['id'])) {
     }
     $nome_sala = $sala['nome_sala'];
 
-    // Seleciona o event_id do calendar_api
-    $sql = "SELECT event_id FROM calendar_api WHERE titulo = ? AND data_inicio = ? AND data_fim = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sss", $nome_sala, $data_inicio, $data_fim);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $event = $result->fetch_assoc();
-    $stmt->close();
+    $event_id = getEventId($conn, $nome_sala, $data_inicio, $data_fim);
 
-    if (!$event) {
-      
-       // die("Evento não encontrado no calendar_api.");
-       
-    }
-    $event_id = $event['event_id'];
+
 
     // Instancia a classe GoogleCalendarApi
     $googleCalendarApi = new GoogleCalendarApi();
