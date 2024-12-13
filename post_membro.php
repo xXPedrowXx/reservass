@@ -8,7 +8,7 @@ header('Content-Type: application/json');
 // Verifica se a requisição é do tipo POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $values = $_POST['values'] ?? null;
-    $externos = $_POST['externos'] ?? [];
+    $externos = $_POST['externos'] ?? null;
     $reserva_id = $_POST['reserva_id'] ?? null;
 
     // Validação dos dados recebidos
@@ -19,12 +19,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Seleciona dados da reserva
-    $query = "SELECT * FROM reservas WHERE id = $reserva_id";
-    $resultado = $conn->query($query);
-    if ($resultado && $resultado->num_rows > 0) {
-        $reservas = $resultado->fetch_assoc();
-        $data_inicio = $reservas['data_inicio'];
-        $data_fim = $reservas['data_fim'];
+selectId('reservas',$reserva_id,$conn);
+if ($resultado->num_rows > 0) {
+    $row = $resultado->fetch_assoc();
+        $data_inicio = $row['data_inicio'];
+        $data_fim = $row['data_fim'];
 
         // Ajuste de 3 horas para o fuso horário
         $data_inicio_obj = new DateTime($data_inicio);
@@ -41,18 +40,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $data_inicio_api = $data_inicio_obj_ajustada->format('Y-m-d H:i:s');
         $data_fim_api = $data_fim_obj_ajustada->format('Y-m-d H:i:s');
 
-        // Data sem ajuste de fuso horário para comparação no banco
-
     } else {
         echo json_encode(['success' => false, 'message' => 'Reserva não encontrada']);
         exit;
     }
 
-    // Seleciona dados do evento no calendário com a data ajustada
-    $query = "SELECT * FROM calendar_api WHERE data_inicio = '$data_inicio_api' AND data_fim = '$data_fim_api'";
-    $result = $conn->query($query);
-    if ($result && $result->num_rows > 0) {
-        $calendar_api = $result->fetch_assoc();
+    $calendar_api = getCalendarEvent($data_inicio_api, $data_fim_api, $conn);
+    if ($calendar_api) {
+        $event_id = $calendar_api['event_id'];
+        $titulo = $calendar_api['titulo'];
     } else {
         error_log("Erro ao adicionar membros: Evento no calendário não encontrado. Data início: $data_inicio_api, Data fim: $data_fim_api");
         echo json_encode(['success' => false, 'message' => 'Evento no calendário não encontrado', 'data_inicio' => $data_inicio_api, 'data_fim' => $data_fim_api]);
@@ -68,6 +64,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'end_time' => $data_fim_obj->format('Y-m-d\TH:i:s')
     );
 
+    // Se $externos for null, busca os emails dos membros e usuários
+
+   if (is_null($externos)) {
+    $externos = getEmails($reserva_id, $conn);
+} else {
+    // Se $externos não for null, adiciona os membros existentes
+    $externos = array_merge($externos, getEmails($reserva_id, $conn));
+}
+
+    // Valida os emails
+    $valid_emails = [];
+    foreach ($externos as $email) {
+        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $valid_emails[] = $email;
+        } else {
+            error_log("Email inválido: $email");
+        }
+    }
+
     // Insere cada membro associado à reserva
     if ($values) {
         foreach ($values as $id) {
@@ -76,8 +91,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Insere cada membro externo na tabela user_temp
-    if ($externos) {
-        foreach ($externos as $email) {
+    if ($valid_emails) {
+        foreach ($valid_emails as $email) {
             insert_user_temp($reserva_id, $email, $conn);
         }
     }
@@ -93,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $event_time, 
             $_SESSION['user_timezone'], 
             $_SESSION['access_token'], 
-            $externos
+            $valid_emails
         );
         echo json_encode(['success' => true, 'message' => 'Membros associados à reserva com sucesso']);
     } catch (Exception $e) {

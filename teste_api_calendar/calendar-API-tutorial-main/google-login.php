@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 
 require_once('google-calendar-api.php');
@@ -17,7 +18,7 @@ if(isset($_GET['code'])) {
 
 		// Redirect to the page where user can create event
 		header('Location: ../../index.php');
-		// header('Location: home.php');
+	
 		exit();
 	}
 	catch(Exception $e) {

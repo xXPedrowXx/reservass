@@ -1,6 +1,6 @@
 <?php
 include 'inc/query.php'; 
-require_once('teste_api_calendar/calendar-API-tutorial-main/google-calendar-api.php');
+
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
 
@@ -38,7 +38,8 @@ while ($row = $resultado->fetch_assoc()) {
 }
 
 select_sala($conn);
-$nome_sala = '';
+
+
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $data_inicio = $_POST['data_inicio'];
@@ -48,96 +49,47 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sala_id = $_POST['sala_id'];
     $url = $_POST['url'];
 
-
-
-    
-
     if (!empty($sala_id) && !empty($data_inicio) && !empty($duracao)) {
-        update_R($data_inicio, $data_fim, $url, $id, $sala_id, $user_id, $conn);
+       // update_R($data_inicio, $data_fim, $url, $id, $sala_id, $user_id, $conn);
         echo "Reserva atualizada com sucesso.";
-      
-
-        $event_time = array(
-            'start_time' => (new DateTime($data_inicio))->format('Y-m-d\TH:i:s'),
-            'end_time' => (new DateTime($data_fim))->format('Y-m-d\TH:i:s')
-        );
-
-        try {
-            $googleCalendarApi = new GoogleCalendarApi();
-            $googleCalendarApi->UpdateCalendarEvent(
-                $event_id, 
-                'primary', 
-                $nome_sala, 
-                false, 
-                $event_time, 
-                $_SESSION['user_timezone'], 
-                $_SESSION['access_token'], 
-                $externos
-            );
-            echo json_encode(['success' => true, 'message' => 'Membros associados à reserva com sucesso']);
-        } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
-        }
-
-        header('Location: calendario.php');
-        exit();
+      //  header('Location: calendario.php');
+        //exit();
     } else {
         echo "Erro ao atualizar a reserva.";
         echo "Erro: " . $conn->error;
     }
 }
-
-$data_inicio_obj = new DateTime($data_inicio);
-$data_fim_obj = new DateTime($data_fim);
-
-$data_inicio_obj->modify('+3 hours');
-$data_fim_obj ->modify('+3 hours');
-
-// Converte as datas ajustadas para o formato de string
-$data_inicio_api = $data_inicio_obj->format('Y-m-d H:i:s');
-$data_fim_api = $data_fim_obj->format('Y-m-d H:i:s');
-
-$query = "SELECT * FROM calendar_api WHERE data_inicio = '$data_inicio_api' AND data_fim = '$data_fim_api'";
-$result = $conn->query($query);
-if ($result && $result->num_rows > 0) {
-    $calendar_api = $result->fetch_assoc();
-} else {
-    error_log("Erro ao adicionar membros: Evento no calendário não encontrado. Data início: $data_inicio_api, Data fim: $data_fim_api");
-    echo json_encode(['success' => false, 'message' => 'Evento no calendário não encontrado', 'data_inicio' => $data_inicio_api, 'data_fim' => $data_fim_api]);
-    exit;
-}
-
-$event_id = $calendar_api['event_id'];
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE htmllang="en">
 <head>
     <meta charset="UTF-8">
     <title>Cadastro de Reservas</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/css/login.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <main>
         <div class="page">
             <form method="post" id="formLogin" class="formLogin">
-                <h1 id="top">Reservar sala</h1>
+            <h1 id="top">Reservar sala</h1>
 
-                <label for="sala_id">Salas</label>
-                <div class="dropdown">
-                    <input readonly onclick="myFunction('salaDropdown')" placeholder="<?php echo !empty($nome_sala) ? $nome_sala : 'Select Sala'; ?>" class="dropbtn">
-                    <div id="salaDropdown" class="dropdown-content">
-                        <input type="text" id="salaInput" onkeyup="filterFunction('salaInput', 'salaDropdown')" onclick="event.stopPropagation()">
-                        <?php
-                        while ($sala = $resultado->fetch_assoc()) {
-                            echo '<a href="#" onclick="selectSala(' . $sala['id'] . ', \'' . $sala['nome_sala'] . '\')">' . $sala['nome_sala'] . '</a>';
-                        }
-                        ?>
-                    </div>
-                </div>
+<label for="sala_id">Salas</label>
+<div class="dropdown">
+<input id="teste" readonly onclick="myFunction('salaDropdown')" value="<?php echo !empty($nome_sala) ? $nome_sala : ''; ?>" placeholder="Select Sala" class="dropbtn">
+    <div id="salaDropdown" class="dropdown-content">
+        <input type="text" id="salaInput" onkeyup="filterFunction('salaInput', 'salaDropdown')" onclick="event.stopPropagation()">
+        <?php
+        while ($sala = $resultado->fetch_assoc()) {
+            echo '<a href="#" onclick="selectSala(' . $sala['id'] . ', \'' . $sala['nome_sala'] . '\')">' . $sala['nome_sala'] . '</a>';
+        }
+        ?>
+    </div>
+</div>
 
-                <input type="hidden" id="sala_id" name="sala_id" value="<?php echo $sala_id; ?>" required>
+<input type="hidden" id="sala_id" name="sala_id" value="<?php echo $sala_id; ?>" required>
 
                 <label for="data_inicio">Hora de início de reserva</label>
                 <select name="data_inicio" id="data_inicio">
@@ -188,11 +140,11 @@ $event_id = $calendar_api['event_id'];
     </main>
 
     <script>
-        document.getElementById("formLogin").addEventListener("submit", function (event) {
+         document.getElementById("formLogin").addEventListener("submit", function (event) {
             event.preventDefault();
-            createCalendar();
+    updatecreateCalendar()
+           
         });
-
         function myFunction(dropdownId) {
             document.getElementById(dropdownId).classList.toggle("show");
         }
@@ -219,26 +171,79 @@ $event_id = $calendar_api['event_id'];
             document.getElementById("salaDropdown").classList.remove("show");
         }
 
-        function createCalendar() {
-            const dataInicioInput = document.getElementById("data_inicio").value;
-            const duracaoInput = document.getElementById("duracao").value;
-            const salaIdInput = document.getElementById("sala_id").value;
-            const membrosList = document.getElementById("membrosList").innerText;
-
-            if (!dataInicioInput || !duracaoInput || !salaIdInput) {
-                console.error("Erro: algum campo obrigatório está vazio!");
-                return;
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropbtn') && !event.target.matches('#salaInput')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
             }
-
-            const nome_sala = "<?php echo $nome_sala; ?>";
-            const data_inicio_str = "<?php echo "$ano-$mes-$dia"; ?>T" + dataInicioInput + ":00";
-            const data_inicio = moment(data_inicio_str, 'YYYY-MM-DDTHH:mm:ss');
-            const duracao = moment.duration(duracaoInput); // Convertendo para duração válida
-            const data_fim = data_inicio.clone().add(duracao);
-            const guests = membrosList.split(',').map(email => email.trim());
-
-            // Código para enviar o evento ao Google Calendar...
         }
+
+      
+        function updatecreateCalendar() {
+    const reserva_id = "<?php echo $id; ?>";
+    const dataInicioInput = document.getElementById("data_inicio").value;
+    const duracaoInput = document.getElementById("duracao").value;
+    const salaIdInput = document.getElementById("sala_id").value;
+
+    const urlinput = document.getElementById("url").value;
+
+    // Debugging statements to check the values of the inputs
+    console.log("dataInicioInput:", dataInicioInput);
+    console.log("duracaoInput:", duracaoInput);
+    console.log("salaIdInput:", salaIdInput);
+
+
+    if (!dataInicioInput || !duracaoInput || !salaIdInput ) {
+        console.error("Erro: algum campo obrigatório está vazio!");
+        return;
+    }
+
+    const data_inicio_str = "<?php echo "$anoI-$mesI-$diaI"; ?>T" + dataInicioInput + ":00";
+    const data_inicio = moment(data_inicio_str, 'YYYY-MM-DDTHH:mm:ss');
+    const duracao = moment.duration(duracaoInput); 
+    const data_fim = data_inicio.clone().add(duracao);
+
+    const parameters = {     
+      
+        event_time: {
+            start_time: moment(data_inicio, 'YYYY-MM-DDTHH:mm:ss').toISOString(),
+            end_time: moment(data_fim, 'YYYY-MM-DDTHH:mm:ss').toISOString()
+        },
+        all_day: 0,
+        operation: 'create',
+        reserva_id: reserva_id,
+        urlinput: urlinput ,
+        salaIdInput: salaIdInput
+    };
+
+    // Debugging statement to check the value of reserva_id
+    console.log("reserva_id:", reserva_id);
+
+    $.ajax({
+        type: 'POST',
+        url: 'edit_reserva.php',
+        data: { event_details: parameters },
+        dataType: 'json',
+        success: function(response) {
+            console.log("Response:", response);
+            if (response.success) {
+                alert("Reserva atualizada com sucesso!");
+            } else {
+                alert("Erro ao atualizar reserva: " + response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error:", status, error);
+            console.error("Response Text:", xhr.responseText);
+        }
+    });
+ 
+}
     </script>
 </body>
 </html>

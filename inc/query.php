@@ -319,6 +319,43 @@ function insertR($user_id, $sala_id, $data_inicio, $data_fim, $url, $conn) {
 
 }
 
+// Função para selecionar dados do evento no calendário
+function getCalendarEvent($data_inicio_api, $data_fim_api, $conn) {
+    $query = "SELECT * FROM calendar_api WHERE data_inicio = '$data_inicio_api' AND data_fim = '$data_fim_api'";
+    $result = $conn->query($query);
+    if ($result && $result->num_rows > 0) {
+        return $result->fetch_assoc();
+    } else {
+        return null;
+    }
+}
+
+// Função para buscar emails dos membros e usuários
+function getEmails($reserva_id, $conn) {
+    $query = "SELECT email FROM users WHERE id IN (SELECT user_id FROM membros WHERE reserva_id = $reserva_id)";
+    $result = $conn->query($query);
+    $emails = [];
+    if ($result && $result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $emails[] = $row['email'];
+        }
+    }
+    return $emails;
+}
+
+// Função para validar emails
+function validateEmails($emails) {
+    $valid_emails = [];
+    foreach ($emails as $email) {
+        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $valid_emails[] = $email;
+        } else {
+            error_log("Email inválido: $email");
+        }
+    }
+    return $valid_emails;
+}
+
 
 
 
