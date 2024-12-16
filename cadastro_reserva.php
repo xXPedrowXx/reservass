@@ -226,30 +226,27 @@ select_sala($conn);
             const data_fim = data_inicio.clone().add(duracao);
 
             $.ajax({
-                type: "POST",
-                url: "create_reserva.php",
-                data: {
-                    data_inicio: data_inicio.format("YYYY-MM-DD HH:mm:ss"),
-                    data_fim: data_fim.format("YYYY-MM-DD HH:mm:ss"),
-                    salaId: salaIdInput,
-                    url: urlInput
-                },
-                success: function(response) {
-                    if (response.success) {
-                        const reserva_id = response.reserva_id;
-                        addMembers(reserva_id);
-                        createCalendar(reserva_id)
-                       
-                    } else {
-                        console.error("Erro ao criar a reserva:", response.message);
-                    }
-                    
-                },
-                error: function(xhr, status, error) {
-                    console.error("Erro na requisição:", xhr.responseText);
-                }
-            });
+    type: "POST",
+    url: "create_reserva.php",
+    data: {
+        data_inicio: data_inicio.format("YYYY-MM-DD HH:mm:ss"),
+        data_fim: data_fim.format("YYYY-MM-DD HH:mm:ss"),
+        salaId: salaIdInput,
+        url: urlInput
+    },
+    success: function(response) {
+        if (response && response.reserva_id) {
+            const reserva_id = response.reserva_id;
+            addMembers(reserva_id);
+            createCalendar(reserva_id);
+        } else {
+            console.error("Erro ao criar a reserva: ID da reserva não encontrado.", response.message);
         }
+    },
+    error: function(xhr, status, error) {
+        console.error("Erro na requisição:", xhr.responseText);
+    }
+});}
 
         function addMembers(reserva_id) {
             $.ajax({
@@ -260,11 +257,9 @@ select_sala($conn);
                     reserva_id: reserva_id
                 },
                 success: function(response) {
-                    if (response.success) {
+                    
                         window.location.href = 'calendario.php';
-                    } else {
-                        console.error("Erro ao adicionar membros:", response.message);
-                    }
+                    
                 },
                 error: function(xhr, status, error) {
                     console.error("Erro na requisição:", xhr.responseText);
@@ -312,14 +307,14 @@ $.ajax({
     dataType: 'json',
     success: function(response) {
         $("#create-event").removeAttr('disabled');
-        alert('Evento criado com ID: ' + response.event_id);
+      // alert('Evento criado com ID: ' + response.event_id);
       
     },
     error: function(response) {
         $("#create-event").removeAttr('disabled');
-        alert(response.responseJSON ? response.responseJSON.message : 'Erro desconhecido');
-        console.log(data_inicio);
-        console.log(data_fim);
+      //  alert(response.responseJSON ? response.responseJSON.message : 'Erro desconhecido');
+      //  console.log(data_inicio);
+      //  console.log(data_fim);
        
     }
 });

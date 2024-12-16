@@ -41,7 +41,7 @@ if ($resultado->num_rows > 0) {
         $data_fim_api = $data_fim_obj_ajustada->format('Y-m-d H:i:s');
 
     } else {
-        echo json_encode(['success' => false, 'message' => 'Reserva não encontrada']);
+ echo json_encode(['success' => false, 'message' => 'Reserva não encontrada']);
         exit;
     }
 

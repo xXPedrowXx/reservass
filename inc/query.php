@@ -306,7 +306,7 @@ function insertR($user_id, $sala_id, $data_inicio, $data_fim, $url, $conn) {
 
             insertM($user_id, $reserva_id, $conn);
            
-            return $reserva_id; // Retorna o ID da reserva inserida
+            return true; // Retorna o ID da reserva inserida
         } else {
             handleError("Erro ao reservar: sala não disponível.");
             return false;

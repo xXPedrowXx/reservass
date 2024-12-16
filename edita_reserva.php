@@ -232,9 +232,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         success: function(response) {
             console.log("Response:", response);
             if (response.success) {
-                alert("Reserva atualizada com sucesso!");
+                //alert("Reserva atualizada com sucesso!");
             } else {
-                alert("Erro ao atualizar reserva: " + response.message);
+              //  alert("Erro ao atualizar reserva: " + response.message);
             }
         },
         error: function(xhr, status, error) {
