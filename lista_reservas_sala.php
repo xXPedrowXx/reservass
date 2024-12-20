@@ -50,7 +50,7 @@ $row3 = $resultado->fetch_assoc();
             <tbody>
                 <?php
                 // Verifica se a consulta retornou algum resultado
-        select_por_sala($sala_id, $conn);
+
                 if ($resultado2->num_rows > 0) {
                     // Loop através de todos os resultados da consulta
                     while ($row3 = $resultado2->fetch_assoc()) {
@@ -71,7 +71,7 @@ $row3 = $resultado->fetch_assoc();
 
                         echo '<td id="borda"> '
                         . $row3["membros"] . ''
-                        . $row3["membros_temp"] .'</td>';
+                        .'</td>';
                     
     '                        <a href="lista_membros.php?reserva_id=' . $row3["reserva_id"] . '" role="button" class="btn btn-warning btn-sm">Membros</a>';
 

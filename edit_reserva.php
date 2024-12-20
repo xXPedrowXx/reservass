@@ -1,6 +1,6 @@
 <?php
 include 'inc/query.php'; 
-require_once('teste_api_calendar/calendar-API-tutorial-main/google-calendar-api.php');
+
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
 
@@ -24,20 +24,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['event_details'])) {
     $data_fim_antiga = $row['data_fim'];
     
     // Ajuste para garantir que as datas estejam no formato correto (UTC)
-    $data_inicio_antiga_obj = new DateTime($data_inicio_antiga, new DateTimeZone('UTC'));
-    $data_fim_antiga_obj = new DateTime($data_fim_antiga, new DateTimeZone('UTC'));
+    $data_inicio_antiga_obj = new DateTime($data_inicio_antiga);
+    $data_fim_antiga_obj = new DateTime($data_fim_antiga); 
     $data_inicio_antiga_obj->modify('+3 hours');
     $data_fim_antiga_obj->modify('+3 hours');
 
+    $teste1 = $data_inicio_antiga_obj->format('Y-m-d H:i:s');
+    $teste2 = $data_fim_antiga_obj->format('Y-m-d H:i:s');
+
     // Busca o event_id na tabela calendar_api com as datas ajustadas
-    $calendar_api = getCalendarEvent($data_inicio_antiga_obj->format('Y-m-d H:i:s'), $data_fim_antiga_obj->format('Y-m-d H:i:s'), $conn);
-    if ($calendar_api) {
-        $event_id = $calendar_api['event_id'];
-    } else {
-        error_log("Erro ao adicionar membros: Evento no calendário não encontrado. Data início: $data_inicio_antiga, Data fim: $data_fim_antiga");
-        echo json_encode(['success' => false, 'message' => 'Evento no calendário não encontrado', 'data_inicio' => $data_inicio_antiga, 'data_fim' => $data_fim_antiga]);
-        exit;
-    }
+ 
 
     // Para as novas datas, faça o mesmo ajuste de fuso horário
     $data_inicio = $event_details['event_time']['start_time'];
@@ -59,20 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['event_details'])) {
     error_log("Data fim ajustada: " . $data_fim_api);
 
     try {
-        $googleCalendarApi = new GoogleCalendarApi();
-        $googleCalendarApi->UpdateCalendarEvent(
-            $event_id,  // Utiliza o event_id encontrado
-            'primary', 
-            $title, 
-            false, 
-            $event_details['event_time'], 
-            $_SESSION['user_timezone'], 
-            $_SESSION['access_token'], 
-            [ $_SESSION['email']]  
-        );
-
-        updateCalendarEvent($conn, $title, $data_inicio, $data_fim, $event_id);
-
+        
         // Converte as datas ajustadas para o formato de string antes de chamar update_R
         $data_inicio_str = $data_inicio_obj->format('Y-m-d H:i:s');
         $data_fim_str = $data_fim_obj->format('Y-m-d H:i:s');

@@ -77,3 +77,4 @@ INSERT INTO users (conta, email, senha, permissao, verificado) VALUES ('adm', 'a
 
     
 */5 * * * * lynx -dump https:/192.168.0.140/envio_email.php
+

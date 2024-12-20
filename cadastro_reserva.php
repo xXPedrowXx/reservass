@@ -5,12 +5,6 @@ error_reporting(E_ALL);
 ini_set("display_errors", 1);
 
 
-
-if (!isset($_SESSION['access_token'])) {
-    header("Location: google-login.php");
-    exit();
-}
-
 if (!isset($_SESSION['id'])) {
     header("Location: login.php");
     exit();
@@ -29,6 +23,7 @@ $reservas = [];
 while ($row = $resultado->fetch_assoc()) {
     $reservas[] = $row;
 }
+
 select_sala($conn);
 ?>
 
@@ -41,7 +36,6 @@ select_sala($conn);
     <link rel="stylesheet" href="assets/css/login.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.1.9/jquery.datetimepicker.min.js"></script>
-
 </head>
 <body>
     <main>
@@ -63,6 +57,8 @@ select_sala($conn);
                 </div>
 
                 <input type="hidden" id="sala_id" name="sala_id" value="<?php echo $sala_id; ?>" required>
+
+      
 
                 <label for="data_inicio">Hora de início de reserva</label>
                 <select name="data_inicio" id="data_inicio">
@@ -138,12 +134,29 @@ select_sala($conn);
                 <input type="hidden" id="user_id" name="user_id">
                 <p id="membrosList"></p>
 
+                <label for="grupo_id">Membros Externos</label>
+                <input type="text" class="dropbtn" placeholder="Digite o email e tecle Enter " id="emailInputExterno" class="form-control" onkeypress="if(event.key === 'Enter') { addExternalEmail(); event.preventDefault(); this.value = ''; }">
+
+                <input type="hidden" id="user_id" name="user_id" required>
+                <p id="membrosEList"></p>
+
                 <button type="submit" class="btn btn-primary">Reservar</button>
             </form>
         </div>
     </main>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <script>
+        let membrosExternos = [];
+
+        function addExternalEmail() {
+            let emailInputExterno = document.getElementById("emailInputExterno").value;
+            if (emailInputExterno && !membrosExternos.includes(emailInputExterno)) {
+                membrosExternos.push(emailInputExterno);
+                document.getElementById("membrosEList").innerText = membrosExternos.join(' , ');
+                console.log(membrosExternos);
+            }
+        }
+
         function myFunction(dropdownId) {
             document.getElementById(dropdownId).classList.toggle("show");
         }
@@ -180,9 +193,6 @@ select_sala($conn);
 
         function selectGroup(id, name) {
             if (!membros.includes(id) && !membrosName.includes(name)) {
-                document.getElementById("user_id").value = id;
-                document.querySelector(".dropbtn").innerText = name;
-                document.getElementById("grupoDropdown").classList.remove("show");
                 membros.push(id);
                 membrosName.push(name);
                 document.getElementById("membrosList").innerText = membrosName.join(' , ');
@@ -203,9 +213,25 @@ select_sala($conn);
 
         document.getElementById("reservaForm").addEventListener("submit", function (event) {
             event.preventDefault();
-   // createCalendar()
             createReservation();
         });
+
+        function addEmail() {
+            let emailInputNormal = document.getElementById("emailInputNormal").value;
+            let emailInputExterno = document.getElementById("emailInputExterno").value;
+
+            if (emailInputNormal && !membrosName.includes(emailInputNormal)) {
+                membrosName.push(emailInputNormal);
+                document.getElementById("membrosList").innerText = membrosName.join(' , ');
+                console.log(membrosName);
+            }
+
+            if (emailInputExterno && !membrosExternos.includes(emailInputExterno)) {
+                membrosExternos.push(emailInputExterno);
+                document.getElementById("membrosEList").innerText = membrosExternos.join(' , ');
+                console.log(membrosExternos);
+            }
+        }
 
         function createReservation() {
             const dataInicioInput = document.getElementById("data_inicio").value;
@@ -235,95 +261,42 @@ select_sala($conn);
         url: urlInput
     },
     success: function(response) {
-        if (response && response.reserva_id) {
+        // Verifique diretamente o reserva_id
+        if (response.reserva_id) {
             const reserva_id = response.reserva_id;
-            addMembers(reserva_id);
-            createCalendar(reserva_id);
+            console.log("Reserva criada com sucesso! ID: ", reserva_id);
+            addMembers(reserva_id); // Chama a função addMembers com o reserva_id
         } else {
-            console.error("Erro ao criar a reserva: ID da reserva não encontrado.", response.message);
+            console.error("Erro ao criar a reserva", response.message);
         }
     },
     error: function(xhr, status, error) {
         console.error("Erro na requisição:", xhr.responseText);
     }
-});}
-
-        function addMembers(reserva_id) {
-            $.ajax({
-                type: "POST",
-                url: "post_membro.php",
-                data: {
-                    values: membros,
-                    reserva_id: reserva_id
-                },
-                success: function(response) {
-                    
-                        window.location.href = 'calendario.php';
-                    
-                },
-                error: function(xhr, status, error) {
-                    console.error("Erro na requisição:", xhr.responseText);
-                }
-            });
-        }
-
-
-        function createCalendar(reserva_id) {
-    const dataInicioInput = document.getElementById("data_inicio").value;
-    const duracaoInput = document.getElementById("duracao").value;
-    const salaIdInput = document.getElementById("sala_id").value;
- const membrosList = document.getElementById("membrosList").innerText;
-
-    if (!dataInicioInput || !duracaoInput || !salaIdInput) {
-        console.error("Erro: algum campo obrigatório está vazio!");
-        return;
-    }
-    const nome_salas = "<?php echo $nome_sala; ?>";
-
-    const data_inicio_str = "<?php echo "$ano-$mes-$dia"; ?>T" + dataInicioInput + ":00";
-    const data_inicio = moment(data_inicio_str, 'YYYY-MM-DDTHH:mm:ss');
-const duracao = moment.duration(duracaoInput); // Ensure duracaoInput is in a valid format like 'PT1H' for 1 hour
-const data_fim = data_inicio.clone().add(duracao);
- const guests = membrosList.split(',').map(email => email.trim());
-
-  
- parameters = {     
-    title: nome_salas, 
-    event_time: {
-        start_time: moment(data_inicio, 'YYYY-MM-DDTHH:mm:ss').toISOString(),
-        end_time: moment(data_fim, 'YYYY-MM-DDTHH:mm:ss').toISOString()
-    },
-    all_day: 0,
-    operation: 'create',
- guests: guests ,
- reserva_id: reserva_id
- 
-};
-
-$.ajax({
-    type: 'POST',
-    url: 'teste_api_calendar/calendar-API-tutorial-main/ajax.php',
-    data: { event_details: parameters },
-    dataType: 'json',
-    success: function(response) {
-        $("#create-event").removeAttr('disabled');
-      // alert('Evento criado com ID: ' + response.event_id);
-      
-    },
-    error: function(response) {
-        $("#create-event").removeAttr('disabled');
-      //  alert(response.responseJSON ? response.responseJSON.message : 'Erro desconhecido');
-      //  console.log(data_inicio);
-      //  console.log(data_fim);
-       
-    }
 });
-
-
-};
-
-        
+        }
+        function addMembers(reserva_id) {
+    $.ajax({
+        type: "POST",
+        url: "post_membro.php",
+        data: {
+            values: membros,
+            reserva_id: reserva_id,
+            externos: membrosExternos
+        },
+        success: function(response) {
+            console.log(response);  // Verifique a resposta no console
+            if (response.success) {
+                window.location.href = 'calendario.php'; // Redireciona após sucesso
+            } else {
+                console.error("Erro ao adicionar membros:", response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Erro na requisição:", xhr.responseText);
+        }
+    });
+}
     </script>
-
 </body>
 </html>

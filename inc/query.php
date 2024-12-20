@@ -265,13 +265,9 @@ function insertM2($data_inicio, $data_fim, $nome_sala, $conn) {
     $stmt->close();
 
     return $reserva['id'];
+    
 }
 
-function insertM ($user_id,$reserva_id,$conn) {
-    global $googleOauthURL; // Declare a variável global
-try {  
-    $sql = $conn->prepare("INSERT INTO membros (user_id, reserva_id) VALUES (?, ?)");
-$sql->bind_param("ii", $user_id, $reserva_id); $sql->execute(); } catch (mysqli_sql_exception $e) { handleError("Erro ao cadastrar membro atentar-se aos usuarios já adicionados : " . $e->getMessage()); } $sql->close(); }
 function insertConfirmacao ($reserva_id,$conn) {
     try {  
         $sql = $conn->prepare("UPDATE reservas SET confirmacao = 1 WHERE id = ?;");
@@ -280,11 +276,39 @@ function insertConfirmacao ($reserva_id,$conn) {
 $sql->bind_param("i", $reserva_id);
 $sql->execute();
 }
-catch (mysqli_sql_exception $e) {
-    handleError("Erro ao confirmar reserva atentar-se a confirmação  já realizada  : ");
+catch (Exception $e) {
+    // Tratar outros erros gerais
+    handleError("Erro inesperado: " . $e->getMessage());
+} 
 }
-$sql->close();
 
+function insertM($user_id, $reserva_id, $conn) {
+    try {
+        // Preparar a consulta SQL para inserção
+        $sql = $conn->prepare("INSERT INTO membros (user_id, reserva_id) VALUES (?, ?)");
+
+        // Verificar se a preparação foi bem-sucedida
+        if ($sql === false) {
+            throw new Exception("Erro na preparação da consulta: " . $conn->error);
+        }
+
+        // Vincular os parâmetros
+        $sql->bind_param("ii", $user_id, $reserva_id);
+
+        // Executar a consulta
+        $sql->execute();
+    } catch (mysqli_sql_exception $e) {
+        // Tratar o erro específico de SQL
+        handleError("Erro ao cadastrar membro. Atentar-se aos usuários já adicionados: " . $e->getMessage());
+    } catch (Exception $e) {
+        // Tratar outros erros gerais
+        handleError("Erro inesperado: " . $e->getMessage());
+    } finally {
+        // Garantir que o statement seja fechado
+        if (isset($sql)) {
+            $sql->close();
+        }
+    }
 }
 
 
@@ -306,7 +330,7 @@ function insertR($user_id, $sala_id, $data_inicio, $data_fim, $url, $conn) {
 
             insertM($user_id, $reserva_id, $conn);
            
-            return true; // Retorna o ID da reserva inserida
+            return $reserva_id; // Retorna o ID da reserva inserida
         } else {
             handleError("Erro ao reservar: sala não disponível.");
             return false;
@@ -761,13 +785,15 @@ catch (mysqli_sql_exception $e) {
     
     
    
-      
                 function select_por_sala($sala_id, $conn) {
                     global $resultado;
-                    global $resultado2;  
-                    $todayArray = getdate();
-                    $today = $todayArray['year'] . '-' . $todayArray['mon'] . '-' . $todayArray['mday'];
+                    global $resultado2;
                 
+                    // Obter a data de hoje no formato adequado
+                    $todayArray = getdate();
+                    $today = $todayArray['year'] . '-' . str_pad($todayArray['mon'], 2, '0', STR_PAD_LEFT) . '-' . str_pad($todayArray['mday'], 2, '0', STR_PAD_LEFT);
+                
+                    // Primeira consulta com os dados de 'user_temp'
                     $sql = $conn->prepare("SELECT 
                         r.id as reserva_id,
                         r.data_inicio, 
@@ -778,6 +804,7 @@ catch (mysqli_sql_exception $e) {
                         s.nome_sala AS nome_sala,
                         CONCAT(CAST(r.data_inicio AS CHAR), ' - ', CAST(r.data_fim AS CHAR)) AS periodo_reserva,
                         GROUP_CONCAT(membros_user.conta SEPARATOR ', ') AS membros,
+                        GROUP_CONCAT(DISTINCT user_temp.email SEPARATOR ', ') AS membros_temp,  -- Incluindo e-mails dos 'user_temp'
                         s.id as sala_id
                     FROM 
                         reservas r
@@ -789,17 +816,21 @@ catch (mysqli_sql_exception $e) {
                         membros m ON r.id = m.reserva_id
                     LEFT JOIN
                         users membros_user ON m.user_id = membros_user.id
+                    LEFT JOIN
+                        user_temp ON r.id = user_temp.reserva_id  -- Junção com 'user_temp'
                     WHERE 
-                        ((r.sala_id = ?) and ( r.data_inicio >= '$today'))
+                        r.sala_id = ? AND r.data_inicio >= ?
                     GROUP BY 
-                        reserva_id, u.conta, r.data_inicio, r.data_fim, s.nome_sala
-                    ");
-                    $sql->bind_param("i", $sala_id);
+                        reserva_id, u.conta, r.data_inicio, r.data_fim, s.nome_sala, u.id, u.permissao, s.id");
+                
+                    // Bind dos parâmetros
+                    $sql->bind_param("is", $sala_id, $today);  // 'i' para integer (sala_id), 's' para string (today)
                     $sql->execute();
                 
+                    // Resultados da primeira consulta
                     $resultado = $sql->get_result();
-
-
+                
+                    // Segunda consulta sem os dados de 'user_temp'
                     $sql2 = $conn->prepare("SELECT 
                         r.id as reserva_id,
                         r.data_inicio, 
@@ -822,14 +853,18 @@ catch (mysqli_sql_exception $e) {
                     LEFT JOIN
                         users membros_user ON m.user_id = membros_user.id
                     WHERE 
-                        ((r.sala_id = ?) and ( r.data_inicio >= '$today'))
+                        r.sala_id = ? AND r.data_inicio >= ?
                     GROUP BY 
-                        reserva_id, u.conta, r.data_inicio, r.data_fim, s.nome_sala
-                    ");
-                    $sql2->bind_param("i", $sala_id);
-                    $sql2->execute(); 
+                        reserva_id, u.conta, r.data_inicio, r.data_fim, s.nome_sala");
+                
+                    // Bind dos parâmetros
+                    $sql2->bind_param("is", $sala_id, $today);  // 'i' para integer (sala_id), 's' para string (today)
+                    $sql2->execute();
+                
+                    // Resultados da segunda consulta
                     $resultado2 = $sql2->get_result();
                 
+                    // Verificação de erro na segunda consulta
                     if ($resultado2) {
                         // Consulta bem-sucedida
                     } else {

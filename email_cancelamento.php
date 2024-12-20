@@ -12,7 +12,7 @@ include ('./teste_email/vendor/autoload.php');
 
 
 
-function sendEmail($reserva_id, $tempo, $conn){
+function cancelEmail($reserva_id, $conn){
 
  
 
@@ -41,7 +41,6 @@ $resultado = select_email($reserva_id, $conn);
 
 
 
-      $url = $row['url'];
       $nome_usuario = explode(',', $membros_nome);
       $email_usuario = explode(',', $membros_email);
       $email_membros_emails = explode(',', $temp_membros_emails);
@@ -85,7 +84,7 @@ try {
 
     //Content
     $mail->isHTML(true);                                  //Set email format to HTML
-    $mail->Subject = 'Convite para Reuniao';
+    $mail->Subject = 'Cancelamento de Reunião';
     $mail->Body    = ' 
     
    <style media="all" type="text/css">
@@ -397,10 +396,10 @@ try {
               <!-- START MAIN CONTENT AREA -->
               <tr>
                 <td class="wrapper">
-                  <p> Um convite  acabou de chegar  </p>
-                  <p> O usuario '.$dono_nome.' acabou de te convidar para uma reuniao '.$tempo.' .</p>
+                  <p> Infelizmente uma reuniao que você era membro foi cancelada  </p>
+                  <p> O usuario '.$dono_nome.' acabou de cancelar a reuniao  .</p>
 
-                  <p> A reuniao acontecera na '.$sala_nome.' no periodo de  ' . $mesI . '/' . $diaI . ' '  . $horaI . 'Até'  . $mesF . '/' . $diaF . ' ' . $horaF . '</p>
+                  <p> A reuniao aconteceria na '.$sala_nome.' no periodo de  ' . $mesI . '/' . $diaI . ' '  . $horaI . ' Até '  . $mesF . '/' . $diaF . ' ' . $horaF . '</p>
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
                     <tbody>
                       <tr>
@@ -409,7 +408,7 @@ try {
                             <tbody>
                               <tr>
                              
-                        <td> <a href="'.$url.'" target="_blank">'.$url.'</a> </td>
+
                               </tr>
                             </tbody>
                           </table>
@@ -441,9 +440,11 @@ try {
   
     $mail->send();
  
-      //header('Location: index.php');
+      header('Location: index.php');
     echo 'Message has been sent';
+    return true;
 } catch (Exception $e) {
     echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+    return false;
 }
 }

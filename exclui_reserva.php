@@ -1,62 +1,24 @@
 <?php
-include('teste_api_calendar/calendar-API-tutorial-main/google-calendar-api.php');
-include './inc/query.php';
+
+include 'email_cancelamento.php';
 
 if(isset($_GET['id'])) {
     $id = $_GET['id'];
     $sala_id = $_GET['sala_id'];
 
     // Seleciona a reserva pelo ID
-    selectID('reservas', $id, $conn);
-    global $resultado;
-    $reserva = $resultado->fetch_assoc();
-    if (!$reserva) {
-       // die("Reserva não encontrada.");
+
+    if (cancelEmail($id, $conn)) {
+        // Chama a função para excluir a reserva
+        delete_reserva($id, $conn);
+        echo "Reserva excluída com sucesso.";
+
+        header("Location: calendario.php?sala_id=$sala_id");
+    } else {
+       echo "Erro ao enviar o email. A reserva não foi excluída.";
     }
 
-    // Ajusta o fuso horário
-    $timezone = new DateTimeZone('America/Sao_Paulo'); // Substitua pelo fuso horário correto
-
-    // Converte e ajusta a data de início
-    $data_inicio = new DateTime($reserva['data_inicio'], $timezone);
-    $data_inicio->modify('+3 hours');
-    $data_inicio = $data_inicio->format('Y-m-d H:i:s');
-
-    // Converte e ajusta a data de fim
-    $data_fim = new DateTime($reserva['data_fim'], $timezone);
-    $data_fim->modify('+3 hours');
-    $data_fim = $data_fim->format('Y-m-d H:i:s');
-
-    // Seleciona o nome da sala pelo ID
-    selectID('salas', $sala_id, $conn);
-    $sala = $resultado->fetch_assoc();
-    if (!$sala) {
-       // die("Sala não encontrada.");
-    }
-    $nome_sala = $sala['nome_sala'];
-
-    $event_id = getEventId($conn, $nome_sala, $data_inicio, $data_fim);
-
-
-
-    // Instancia a classe GoogleCalendarApi
-    $googleCalendarApi = new GoogleCalendarApi();
-
-    // Chama o método para excluir o evento do Google Calendar
-    try {
-        $googleCalendarApi->DeleteCalendarEvent($event_id, 'primary', $_SESSION['access_token']);
-    } catch (Exception $e) {
-        echo $event_id ;
-        echo '<br>';
-        echo $_SESSION['access_token'];
-        echo '<br>';
-       // die("Erro ao excluir evento do Google Calendar: " . $e->getMessage());
-    }
-
-    // Chama a função para excluir a reserva
-    delete_reserva($id, $conn);
-
-    header("Location: calendario.php?");
+     header("Location: calendario.php?");
 } else {
     echo "ID da categoria não foi fornecido.";
 }

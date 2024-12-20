@@ -50,10 +50,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $url = $_POST['url'];
 
     if (!empty($sala_id) && !empty($data_inicio) && !empty($duracao)) {
-       // update_R($data_inicio, $data_fim, $url, $id, $sala_id, $user_id, $conn);
+        update_R($data_inicio, $data_fim, $url, $id, $sala_id, $user_id, $conn);
         echo "Reserva atualizada com sucesso.";
-      //  header('Location: calendario.php');
-        //exit();
+        header('Location: calendario.php');
+        exit();
     } else {
         echo "Erro ao atualizar a reserva.";
         echo "Erro: " . $conn->error;
@@ -140,11 +140,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </main>
 
     <script>
-         document.getElementById("formLogin").addEventListener("submit", function (event) {
-            event.preventDefault();
-    updatecreateCalendar()
-           
-        });
+        
         function myFunction(dropdownId) {
             document.getElementById(dropdownId).classList.toggle("show");
         }
@@ -184,66 +180,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
       
-        function updatecreateCalendar() {
-    const reserva_id = "<?php echo $id; ?>";
-    const dataInicioInput = document.getElementById("data_inicio").value;
-    const duracaoInput = document.getElementById("duracao").value;
-    const salaIdInput = document.getElementById("sala_id").value;
-
-    const urlinput = document.getElementById("url").value;
-
-    // Debugging statements to check the values of the inputs
-    console.log("dataInicioInput:", dataInicioInput);
-    console.log("duracaoInput:", duracaoInput);
-    console.log("salaIdInput:", salaIdInput);
-
-
-    if (!dataInicioInput || !duracaoInput || !salaIdInput ) {
-        console.error("Erro: algum campo obrigatório está vazio!");
-        return;
-    }
-
-    const data_inicio_str = "<?php echo "$anoI-$mesI-$diaI"; ?>T" + dataInicioInput + ":00";
-    const data_inicio = moment(data_inicio_str, 'YYYY-MM-DDTHH:mm:ss');
-    const duracao = moment.duration(duracaoInput); 
-    const data_fim = data_inicio.clone().add(duracao);
-
-    const parameters = {     
-      
-        event_time: {
-            start_time: moment(data_inicio, 'YYYY-MM-DDTHH:mm:ss').toISOString(),
-            end_time: moment(data_fim, 'YYYY-MM-DDTHH:mm:ss').toISOString()
-        },
-        all_day: 0,
-        operation: 'create',
-        reserva_id: reserva_id,
-        urlinput: urlinput ,
-        salaIdInput: salaIdInput
-    };
-
-    // Debugging statement to check the value of reserva_id
-    console.log("reserva_id:", reserva_id);
-
-    $.ajax({
-        type: 'POST',
-        url: 'edit_reserva.php',
-        data: { event_details: parameters },
-        dataType: 'json',
-        success: function(response) {
-            console.log("Response:", response);
-            if (response.success) {
-                //alert("Reserva atualizada com sucesso!");
-            } else {
-              //  alert("Erro ao atualizar reserva: " + response.message);
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error("AJAX Error:", status, error);
-            console.error("Response Text:", xhr.responseText);
-        }
-    });
- 
-}
+    
     </script>
 </body>
 </html>

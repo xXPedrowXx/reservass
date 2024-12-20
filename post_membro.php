@@ -1,6 +1,5 @@
 <?php
 include 'inc/query.php';
-require_once('teste_api_calendar/calendar-API-tutorial-main/google-calendar-api.php');
 
 // Configura cabeçalho para retornar JSON
 header('Content-Type: application/json');
@@ -19,9 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Seleciona dados da reserva
-selectId('reservas',$reserva_id,$conn);
-if ($resultado->num_rows > 0) {
-    $row = $resultado->fetch_assoc();
+    selectId('reservas', $reserva_id, $conn);
+    if ($resultado->num_rows > 0) {
+        $row = $resultado->fetch_assoc();
         $data_inicio = $row['data_inicio'];
         $data_fim = $row['data_fim'];
 
@@ -41,45 +40,19 @@ if ($resultado->num_rows > 0) {
         $data_fim_api = $data_fim_obj_ajustada->format('Y-m-d H:i:s');
 
     } else {
- echo json_encode(['success' => false, 'message' => 'Reserva não encontrada']);
+        echo json_encode(['success' => false, 'message' => 'Reserva não encontrada'.$reserva_id]);
         exit;
     }
-
-    $calendar_api = getCalendarEvent($data_inicio_api, $data_fim_api, $conn);
-    if ($calendar_api) {
-        $event_id = $calendar_api['event_id'];
-        $titulo = $calendar_api['titulo'];
-    } else {
-        error_log("Erro ao adicionar membros: Evento no calendário não encontrado. Data início: $data_inicio_api, Data fim: $data_fim_api");
-        echo json_encode(['success' => false, 'message' => 'Evento no calendário não encontrado', 'data_inicio' => $data_inicio_api, 'data_fim' => $data_fim_api]);
-        exit;
-    }
-
-    $event_id = $calendar_api['event_id'];
-    $titulo = $calendar_api['titulo'];
-
-    // Prepara os dados de tempo para o evento
-    $event_time = array(
-        'start_time' => $data_inicio_obj->format('Y-m-d\TH:i:s'), // Formato ISO 8601 com T
-        'end_time' => $data_fim_obj->format('Y-m-d\TH:i:s')
-    );
-
-    // Se $externos for null, busca os emails dos membros e usuários
-
-   if (is_null($externos)) {
-    $externos = getEmails($reserva_id, $conn);
-} else {
-    // Se $externos não for null, adiciona os membros existentes
-    $externos = array_merge($externos, getEmails($reserva_id, $conn));
-}
 
     // Valida os emails
     $valid_emails = [];
-    foreach ($externos as $email) {
-        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $valid_emails[] = $email;
-        } else {
-            error_log("Email inválido: $email");
+    if ($externos) {
+        foreach ($externos as $email) {
+            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $valid_emails[] = $email;
+            } else {
+                error_log("Email inválido: $email");
+            }
         }
     }
 
@@ -97,23 +70,7 @@ if ($resultado->num_rows > 0) {
         }
     }
 
-    // Atualiza o evento no Google Calendar
-    try {
-        $googleCalendarApi = new GoogleCalendarApi();
-        $googleCalendarApi->UpdateCalendarEvent(
-            $event_id, 
-            'primary', 
-            $titulo, 
-            false, 
-            $event_time, 
-            $_SESSION['user_timezone'], 
-            $_SESSION['access_token'], 
-            $valid_emails
-        );
-        echo json_encode(['success' => true, 'message' => 'Membros associados à reserva com sucesso']);
-    } catch (Exception $e) {
-        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
-    }
+    echo json_encode(['success' => true, 'message' => 'Membros adicionados com sucesso']);
 } else {
     // Método HTTP não permitido
     error_log("Método não permitido: " . $_SERVER['REQUEST_METHOD']);

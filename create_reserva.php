@@ -24,8 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $reserva_id = insertR($user_id, $sala_id, $data_inicio, $data_fim, $url, $conn);
 
         if ($reserva_id) {
-            // Retorna sucesso com o reserva_id
-            echo json_encode(['success' => true, 'reserva_id' => $reserva_id]);
+            // Retorna apenas o reserva_id
+            echo json_encode(['reserva_id' => $reserva_id]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Erro ao criar a reserva']);
         }

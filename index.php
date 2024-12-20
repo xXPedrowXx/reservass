@@ -1,8 +1,5 @@
 <?php
 
-require_once('teste_api_calendar/calendar-API-tutorial-main/google-calendar-api.php');
-require_once('teste_api_calendar/calendar-API-tutorial-main/settings.php');
-
 include 'inc/query.php'; 
 
 if (!isset($_SESSION['id'])) {
@@ -10,11 +7,7 @@ if (!isset($_SESSION['id'])) {
    
 
 
-if(!isset($_SESSION['access_token'])) {
-    $login_url = 'https://accounts.google.com/o/oauth2/auth?scope=' . urlencode('https://www.googleapis.com/auth/calendar') . '&redirect_uri=' . urlencode(CLIENT_REDIRECT_URL) . '&response_type=code&client_id=' . CLIENT_ID . '&access_type=online';
-	header('Location:'.$login_url);
 
-}
 }
 
 
