@@ -43,7 +43,7 @@ $resultado = select_email($reserva_id, $conn);
 
       $nome_usuario = explode(',', $membros_nome);
       $email_usuario = explode(',', $membros_email);
-      $email_membros_emails = explode(',', $temp_membros_emails);
+      $email_membros_emails = $temp_membros_emails ? explode(',', $temp_membros_emails) : [];
   } else {
       echo "Nenhum resultado encontrado ou erro na consulta.";
   }
@@ -54,13 +54,13 @@ try {
     //Server settings
 
     $mail->isSMTP();                                          //Send using SMTP
-    $mail->Host       = '';             //Set the SMTP server to send through
+    $mail->Host       = 'smtp.acessoseguro.net';             //Set the SMTP server to send through
     $mail->SMTPAuth   = true;       
     $mail->Port       = 465;                                 //Enable SMTP authentication
                   //SMTP password
   
-   $mail->Username   = '';                     //SMTP username
-   $mail->Password   = '';  
+   $mail->Username   = 'integracao@apklog.com.br';                     //SMTP username
+   $mail->Password   = 'Apkintegracao2024@';  
   
     $mail->CharSet    = 'utf8';                               // utf8 / iso-8859-1
     $mail->SMTPSecure = "ssl";

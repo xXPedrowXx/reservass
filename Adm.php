@@ -46,10 +46,17 @@ if ($resultado->num_rows > 0) {
     <title>Painel</title>
     <link rel="stylesheet" href="assets/css/styles.css">
     
+	 <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('teste').addEventListener('click', function() {
+                window.location.href = 'Adm.php';
+            });
+        });
+    </script>
 </head>
 <body>
     <div class="Menu-content">
-        <h1>APK</h1>
+         <h1 id="teste">APK</h1>
         <ul>
          
             <li><a href="logout.php">Logout</a></li>

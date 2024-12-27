@@ -28,20 +28,19 @@ if ($resultado && $resultado->num_rows > 0) {
   $numero = $row['codigo_verificação'];}
 
   $mail->isSMTP();                                          //Send using SMTP
-  $mail->Host       = '';             //Set the SMTP server to send through
+  $mail->Host       = 'smtp.acessoseguro.net';             //Set the SMTP server to send through
   $mail->SMTPAuth   = true;       
-  $mail->Port       = '';                                 //Enable SMTP authentication
+  $mail->Port       = 465;                                 //Enable SMTP authentication
                 //SMTP password
 
- $mail->Username   = '';                     //SMTP username
- $mail->Password   = '';  
+ $mail->Username   = 'integracao@apklog.com.br';                     //SMTP username
+ $mail->Password   = 'Apkintegracao2024@';  
 
   $mail->CharSet    = 'utf8';                               // utf8 / iso-8859-1
   $mail->SMTPSecure = "ssl";
- 
- 
-     //Recipients
-     $mail->setFrom('integracao@apklog.com.br' , 'ti');
+
+  //Recipients
+  $mail->setFrom('integracao@apklog.com.br' , 'Ti');
 
     $mail->addAddress($email, $nome);     //Add a recipient
  

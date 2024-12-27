@@ -729,15 +729,7 @@ catch (mysqli_sql_exception $e) {
         }
     
         // Deleta o evento do calendar_api
-        try {
-            $sql = "DELETE FROM calendar_api WHERE titulo = ? AND data_inicio = ? AND data_fim = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sss", $nome_sala, $data_inicio, $data_fim);
-            $stmt->execute();
-            $stmt->close();
-        } catch (mysqli_sql_exception $e) {
-            handleError("Erro ao deletar evento do calendar_api.");
-        }
+       
     }
 
         function delete_hour($conn) {

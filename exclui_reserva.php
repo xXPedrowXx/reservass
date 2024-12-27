@@ -13,12 +13,12 @@ if(isset($_GET['id'])) {
         delete_reserva($id, $conn);
         echo "Reserva excluída com sucesso.";
 
-        header("Location: calendario.php?sala_id=$sala_id");
+        //header("Location: calendario.php?sala_id=$sala_id");
     } else {
        echo "Erro ao enviar o email. A reserva não foi excluída.";
     }
 
-     header("Location: calendario.php?");
+    // header("Location: calendario.php?");
 } else {
     echo "ID da categoria não foi fornecido.";
 }

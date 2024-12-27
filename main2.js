@@ -40,12 +40,12 @@ function load() {
 
       if (dayNumber >= day && nav === 0) {
         dayS.addEventListener('click', () => {
-          window.location.href = `/lista_reservas_dia.php?dia=${dayNumber}&mes=${month + 1}&ano=${year}`;
+          window.location.href = `/controle_salas/lista_reservas_dia.php?dia=${dayNumber}&mes=${month + 1}&ano=${year}`;
         });
       }
       if (nav > 0) {
         dayS.addEventListener('click', () => {
-          window.location.href = `/lista_reservas_dia.php?dia=${dayNumber}&mes=${month + 1}&ano=${year}`;
+          window.location.href = `/controle_salas/lista_reservas_dia.php?dia=${dayNumber}&mes=${month + 1}&ano=${year}`;
         });
       }
 

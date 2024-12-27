@@ -23,7 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Insere os dados do novo fornecedor no banco de dados
         insertU($conta, $email, $senha,5,$numero,  $conn);
         // Redireciona de volta para a página listar_fornecedores.php após adicionar o fornecedor
-        header("Location: email_confirmacao.php?adm=1&email=$email");
+        header("Location: email_confirmacao.php?email=$email");
         exit();
     } else {
         echo "Erro ao adicionar usuario: " . $conn->error;
