@@ -1,8 +1,14 @@
-Create database controle_salas;
+Create database teste_implementacao;
 
 
-use controle_salas;
+use teste_implementacao;
 
+
+CREATE TABLE IF NOT EXISTS filiais (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    endereco VARCHAR(255) NOT NULL
+);
 
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -11,7 +17,9 @@ CREATE TABLE IF NOT EXISTS users (
     senha VARCHAR(255) NOT NULL,
     permissao INT NOT NULL CHECK (permissao BETWEEN 1 AND 10),
     codigo_verificação Varchar(255),
-    verificado bool 
+    verificado bool,
+    filial int not null,
+    FOREIGN KEY (filial) REFERENCES filiais(id)
 );
 
 
@@ -20,9 +28,17 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS salas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome_sala VARCHAR(255) NOT NULL UNIQUE,
-    descricao VARCHAR(255) NOT NULL
+    descricao VARCHAR(255) NOT NULL,
+    filial int not null,
+    FOREIGN KEY (filial) REFERENCES filiais(id),
    
 );	
+
+
+
+
+
+
 
 
 CREATE TABLE IF NOT EXISTS indisponivel (
@@ -35,6 +51,10 @@ CREATE TABLE IF NOT EXISTS indisponivel (
     FOREIGN KEY (sala_id) REFERENCES salas(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+
+
+
 
 
 
@@ -66,6 +86,8 @@ CREATE TABLE IF NOT EXISTS membros (
 
 
 INSERT INTO users (conta, email, senha, permissao, verificado) VALUES ('adm', 'adm', 'adm', 5, 1);
+
+INSERT INTO filiais (nome,endereco) VALUES ('Matriz','Curitiba');
 
 
     create table user_temp(

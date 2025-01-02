@@ -4,6 +4,7 @@ include 'inc/query.php';
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
 
+$filial = $_SESSION['filial'];
 
 if (!isset($_SESSION['id'])) {
     header("Location: login.php");
@@ -24,7 +25,7 @@ while ($row = $resultado->fetch_assoc()) {
     $reservas[] = $row;
 }
 
-select_sala($conn);
+select_sala_filial($filial, $conn)
 ?>
 
 <!DOCTYPE html>
@@ -123,7 +124,7 @@ select_sala($conn);
                     <div id="grupoDropdown" class="dropdown-content">
                         <input type="text" placeholder="aplique o filtro" id="grupoInput" onkeyup="filterFunction('grupoInput', 'grupoDropdown')" onclick="event.stopPropagation()">
                         <?php
-                        select_cadastro_membro($user_id, $conn);
+                  select_cadastro_membro($user_id, $filial, $conn);
                         while ($sala = $resultado->fetch_assoc()) {
                             echo '<a onclick="selectGroup(' . $sala['user_id'] . ', \'' . $sala['user_conta'] . '\')">' . $sala['user_conta'] . '</a>';
                         }

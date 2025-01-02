@@ -5,11 +5,15 @@ include 'inc/query.php';
 
 // Iniciar sessão
 // Verificar se o adm está logado
-verificarPermissao($conn); // Chame a função para verificar a permissão
+
 $user_id = $_SESSION['id'];
 
+selectID('users',$user_id,$conn);
+$row2 = $resultado->fetch_assoc();
+$user_permissao = $row2["permissao"];
+
 // Consulta SQL para selecionar todos os usuários
-select_indiponivel($conn)
+select_filiais($conn);
 
 
 
@@ -34,17 +38,16 @@ select_indiponivel($conn)
     <div class="container" style="margin-top: 40px">
 
         <center>
-            <h3>Lista de salas Indisponiveis</h3>
+            <h3>Lista de salas</h3>
         </center>
         <br>
         <br>
         <table class="table" id="table_id">
             <thead>
                 <tr>
-                    <th scope="col">Sala</th>
-                    <th scope="col">Periodo </th>
-                    <th scope="col">Motivo</th>
-                    <th scope="col">ADM</th>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Endereço</th>
+                 
 
                 </tr>
             </thead>
@@ -55,37 +58,35 @@ select_indiponivel($conn)
                     // Loop através de todos os resultados da consulta
                     while ($row = $resultado->fetch_assoc()) {
                         echo "<tr>";
-                        echo "<td id='borda'>" . $row["nome_sala"] . "</td>";
-                        $periodo_reserva = $row["periodo_reserva"];
-                        $mesI = substr($periodo_reserva, 5, 2); // Do 5º ao 14º caractere
-                        $diaI = substr($periodo_reserva, 8, 2); // Do 7º ao 8º caractere
-                        $horaI = substr($periodo_reserva, 11, 5); // Do 9º ao 13º caractere
-                        
-                        $mesF = substr($periodo_reserva, 27, 2); // Do 27º ao 28º caractere
-                        $diaF = substr($periodo_reserva, 30, 2); // Do 29º ao 30º caractere
-                        $horaF = substr($periodo_reserva, 33, 5); // Do 31º ao 35º caractere
-                        
-                        echo "<td id='borda'> De: " . $mesI . "/" . $diaI . " " . $horaI . " Até " . $mesF . "/" . $diaF . " " . $horaF . "</td>";
+                        echo "<td id='borda'>" . $row["nome"] . "</td>";
+                        echo "<td id='borda'>" . $row["endereco"] . "</td>";
 
-                        echo "<td id='borda'>" . $row["motivo"] . "</td>";
-                        echo "<td id='borda'>" . $row["nome_usuario"] . "</td>";
-                        echo "<td>";
-                        echo '<a href="edita_indisponibilidade.php?id=' . $row["ind_id"] . '" role="button" class="btn btn-warning btn-sm"><i class="far fa-edit"></i>&nbsp; Editar</a>';
                         echo ' ';
-                        echo '<a href="exclui_indisponibilidade.php?id=' . $row["ind_id"] . '" role="button" class="btn btn-danger btn-sm"><i class="far fa-trash-alt"></i>&nbsp;</a>';
+                            if ($user_permissao == 5) {
+                  
+                        echo "<td>";
+                        echo '<a href="edita_filiais.php?id=' . $row["id"] . '" role="button" class="btn btn-warning btn-sm"><i class="far fa-edit"></i>&nbsp; Editar</a>';
+                        echo ' ';
+                        echo '<a href="exclui_filiais.php?id=' . $row["id"] . '" role="button" class="btn btn-danger btn-sm"><i class="far fa-trash-alt"></i>&nbsp;</a>';
                         echo "</td>";
-                        echo "</tr>";
+                        echo "</tr>";}
 
                     }
                 } else {
                     // Se não houver usuários, exibe uma mensagem na tabela
-                    echo '<tr><td colspan="5">Nenhuma indisponibilidade encontrado</td></tr>';
+                    echo '<tr><td colspan="5">Nenhuma filial encontrada</td></tr>';
                 }
                 ?>
             </tbody>
         </table>
 
-  
+        <div style="text-align: right; margin-top:20px;">
+            <?php
+        if ($user_permissao == 5) {
+          echo '<a href="cadastro_filial.php" role="button" class="btn btn-success btn-sm">Nova filial</a>';
+        }
+?>
+        </div>
 
     </div>
 

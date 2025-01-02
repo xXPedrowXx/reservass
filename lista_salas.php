@@ -7,17 +7,14 @@ include 'inc/query.php';
 // Verificar se o adm está logado
 
 $user_id = $_SESSION['id'];
+$filial =  $_SESSION['filial'];
 
 selectID('users',$user_id,$conn);
 $row2 = $resultado->fetch_assoc();
 $user_permissao = $row2["permissao"];
 
 // Consulta SQL para selecionar todos os usuários
-select_sala($conn);
-
-
-
-
+select_sala_filial($filial, $conn);
 
 ?>
 
@@ -75,7 +72,7 @@ select_sala($conn);
                     }
                 } else {
                     // Se não houver usuários, exibe uma mensagem na tabela
-                    echo '<tr><td colspan="5">Nenhum Dashboard encontrado</td></tr>';
+                    echo '<tr><td colspan="5">Nenhuma sala encontrado</td></tr>';
                 }
                 ?>
             </tbody>

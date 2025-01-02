@@ -67,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 $_SESSION['id'] = $user_data['id'];
                 $_SESSION['email'] = $user_data['email']; 
                 $_SESSION['permissao'] = $user_data['permissao']; 
+                $_SESSION['filial'] = $user_data['filial']; 
 
                 if ($user_data['permissao'] == 5) {
                     header("Location: Adm.php");

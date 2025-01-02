@@ -52,13 +52,13 @@ function selectlogin($email, $conn) {
     
 }
 
-function Ajax($conn, $ano, $mes) {
-    $sql = "SELECT r.id ,r.sala_id ,r.data_inicio, r.data_fim , s.nome_sala as nome_sala , s.id 
-FROM reservas r
-join
-      salas s ON r.sala_id = s.id WHERE YEAR(data_inicio) = ? AND MONTH(data_inicio) = ?";
+function Ajax($conn, $ano, $mes, $filial) {
+    $sql = "SELECT r.id, r.sala_id, r.data_inicio, r.data_fim, s.nome_sala as nome_sala, s.id 
+            FROM reservas r
+            JOIN salas s ON r.sala_id = s.id 
+            WHERE YEAR(r.data_inicio) = ? AND MONTH(r.data_inicio) = ? AND s.filial = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ii", $ano, $mes);
+    $stmt->bind_param("iii", $ano, $mes, $filial);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -176,21 +176,23 @@ function selectdata($conn, $sala_id, $ano, $mes, $dia) {
     return $stmt->get_result();
 }
 
-function  insertU($conta, $email, $senha, $u ,$codigo_verificação ,$conn) {
-try {
+function insertU($conta, $email, $senha, $u, $codigo_verificacao, $filial, $conn) {
+    try {
         if ($u == 5) {
-            $sql = $conn->prepare("INSERT INTO users (conta, email, senha,permissao,codigo_verificação,verificado) VALUES (?, ?, ?,5,?,0)");
+            $sql = $conn->prepare("INSERT INTO users (conta, email, senha, permissao, codigo_verificação, filial, verificado) VALUES (?, ?, ?, 5, ?, ?, 0)");
         } else {
-            $sql = $conn->prepare("INSERT INTO users (conta, email, senha,permissao,codigo_verificação,verificado) VALUES (?, ?, ?,1,?,0)");
+            $sql = $conn->prepare("INSERT INTO users (conta, email, senha, permissao, codigo_verificação, filial, verificado) VALUES (?, ?, ?, 1, ?, ?, 0)");
         }
 
-    $sql->bind_param("ssss", $conta, $email, $senha,$codigo_verificação);
-    $sql->execute();
-}
-catch (mysqli_sql_exception $e) {
-    handleError("Erro ao cadastrar usuario atentar-se a emails repetidos  : " );
-}
+        if ($sql === false) {
+            throw new mysqli_sql_exception("Erro na preparação da consulta: " . $conn->error);
+        }
 
+        $sql->bind_param("sssss", $conta, $email, $senha, $codigo_verificacao, $filial);
+        $sql->execute();
+    } catch (mysqli_sql_exception $e) {
+        handleError("Erro ao cadastrar usuario atentar-se a emails repetidos: " . $e->getMessage());
+    }
 
     $sql->close();
 }
@@ -234,13 +236,13 @@ function insert_user_temp($reserva_id, $email, $conn) {
 
 
 
-function  insertS($nome_sala, $descricao ,$conn) {
+function  insertS($nome_sala, $descricao,$filial ,$conn) {
 
     try {  
-        $sql = $conn->prepare("INSERT INTO salas (nome_sala, descricao) VALUES (?, ?)");
+        $sql = $conn->prepare("INSERT INTO salas (nome_sala, descricao,filial) VALUES (?, ?,?)");
    
 
-$sql->bind_param("ss", $nome_sala, $descricao);
+$sql->bind_param("sss", $nome_sala, $descricao,$filial);
 $sql->execute();
 }
 catch (mysqli_sql_exception $e) {
@@ -249,6 +251,21 @@ catch (mysqli_sql_exception $e) {
 $sql->close();
 }
 
+
+function  insertF($nome_filial, $Endereço ,$conn) {
+
+    try {  
+        $sql = $conn->prepare("INSERT INTO filiais (nome, endereco) VALUES (?, ?)");
+   
+
+$sql->bind_param("ss", $nome_filial, $Endereço);
+$sql->execute();
+}
+catch (mysqli_sql_exception $e) {
+    handleError("Erro ao cadastrar sala atentar-se a nome  de salas repetidas  : " );
+}
+$sql->close();
+}
 
 
 
@@ -411,20 +428,14 @@ function validateEmails($emails) {
 
 
 
-function select($tabela, $conn) {
-    
+function select_user( $filial, $conn) {
     global $resultado;
     global $id;
 
-    if (preg_match('/^[a-zA-Z0-9_]+$/', $tabela) === 0) {
-        echo "Nome da tabela inválido.";
-        return;
-    }
 
-
-    $sql = $conn->prepare("SELECT * FROM $tabela");
-   
-
+    // Constrói a consulta de forma segura
+    $sql = $conn->prepare("SELECT * FROM users WHERE filial = ?");
+    $sql->bind_param("i", $filial);
     $sql->execute();
     
     $resultado = $sql->get_result();
@@ -435,7 +446,6 @@ function select($tabela, $conn) {
         echo "Erro ao executar a consulta: " . $conn->error;
         $resultado = null; // Garantir que $resultado seja definido
     }
-
 }
 
 
@@ -447,7 +457,7 @@ function select_sala($conn){
 FROM salas s
 LEFT JOIN indisponivel i ON i.sala_id = s.id
 WHERE i.sala_id IS NULL 
-   OR (NOW() NOT BETWEEN i.data_inicio AND i.data_fim)");
+   OR (NOW() NOT BETWEEN i.data_inicio AND i.data_fim) ");
    
 
     $sql->execute();
@@ -462,6 +472,51 @@ WHERE i.sala_id IS NULL
     }
 }
 
+function select_sala_filial($filial, $conn) {
+    global $resultado;
+    global $id;
+
+    $sql = $conn->prepare("SELECT s.id, s.nome_sala, s.descricao
+                           FROM salas s
+                           LEFT JOIN indisponivel i ON i.sala_id = s.id
+                           WHERE (i.sala_id IS NULL 
+                           OR (NOW() NOT BETWEEN i.data_inicio AND i.data_fim)) 
+                           AND s.filial = ?");
+
+    // Adiciona o bind_param para passar o parâmetro $filial
+    $sql->bind_param("i", $filial);
+
+    $sql->execute();
+    
+    $resultado = $sql->get_result();
+    
+    if ($resultado) {
+        // Consulta bem-sucedida
+    } else {
+        echo "Erro ao executar a consulta: " . $conn->error;
+        $resultado = null; // Garantir que $resultado seja definido
+    }
+}
+
+
+function select_filiais($conn){
+    global $resultado;
+    global $id;
+
+    $sql = $conn->prepare("SELECT * FROM filiais");
+   
+
+    $sql->execute();
+    
+    $resultado = $sql->get_result();
+    
+    if ($resultado) {
+        // Consulta bem-sucedida
+    } else {
+        echo "Erro ao executar a consulta: " . $conn->error;
+        $resultado = null; // Garantir que $resultado seja definido
+    }
+}
 
 function selectID($tabela, $id, $conn) {
     global $resultado;
@@ -507,19 +562,17 @@ function selectemail($conn) {
 }
 
 
-
-function select_cadastro_membro($user_id,$conn) {
+function select_cadastro_membro($user_id, $filial, $conn) {
     global $resultado;
 
     // Constrói a consulta de forma segura
     $sql = $conn->prepare("
-SELECT DISTINCT u.id as user_id, u.conta as user_conta , u.email  as email
-FROM users u
-LEFT JOIN membros m ON m.user_id = u.id
-where u.id != ? ;
-        
+        SELECT DISTINCT u.id as user_id, u.conta as user_conta, u.email as email
+        FROM users u
+        LEFT JOIN membros m ON m.user_id = u.id
+        WHERE u.id != ? AND u.filial = ?;
     ");
-    $sql->bind_param("i", $user_id);
+    $sql->bind_param("ii", $user_id, $filial);
     $sql->execute();
     
     $resultado = $sql->get_result();
@@ -530,7 +583,6 @@ where u.id != ? ;
         echo "Erro ao executar a consulta: " . $conn->error;
     }
 }
-
 function select_cadastro_membro2($user_id, $reserva_id, $conn) {
     global $resultado;
 
@@ -559,6 +611,20 @@ function update_s($nome_sala,$descricao,$id, $conn) {
     verificarPermissao($conn);
     $stmt = $conn->prepare("UPDATE salas SET nome_sala = ?, descricao = ? WHERE id = ?");
     $stmt->bind_param("ssi", $nome_sala, $descricao,$id);
+
+    $stmt->execute();
+    }
+    catch (mysqli_sql_exception $e) {
+        handleError("Erro ao atualizar sala atentar-se a nome  de salas repetidas  : " );
+    }
+
+    $stmt->close();
+}
+function update_F($nome,$endereco,$id, $conn) {
+    try {
+    verificarPermissao($conn);
+    $stmt = $conn->prepare("UPDATE filiais SET nome = ?, endereco = ? WHERE id = ?");
+    $stmt->bind_param("ssi", $nome, $endereco,$id);
 
     $stmt->execute();
     }
@@ -905,55 +971,55 @@ catch (mysqli_sql_exception $e) {
 
 
 
-function select_por_dia($conn, $ano, $mes, $dia) {
-    global $resultado;
-
-    if ($dia < 10) {
-        $dia = "0" . $dia;
-    }
-
-    $date = "$ano-$mes-$dia";
-    $sql = $conn->prepare("SELECT 
-    r.id as reserva_id,
-    r.data_inicio, 
-    r.data_fim,
-    u.conta AS nome_usuario, 
-    s.nome_sala AS nome_sala,
-    CONCAT(CAST(r.data_inicio AS CHAR), ' - ', CAST(r.data_fim AS CHAR)) AS periodo_reserva,
-    u.id AS user_id,
-    u.permissao AS user_permissao,
-    GROUP_CONCAT(DISTINCT membros_user.conta SEPARATOR ', ') AS membros,
-    GROUP_CONCAT(DISTINCT user_temp.email SEPARATOR ', ') AS membros_temp,
-    s.id as sala_id
-FROM 
-    reservas r
-JOIN 
-    users u ON r.user_id = u.id
-JOIN 
-    salas s ON r.sala_id = s.id
-LEFT JOIN
-    membros m ON r.id = m.reserva_id
-LEFT JOIN
-    users membros_user ON m.user_id = membros_user.id
-LEFT JOIN
-    user_temp ON r.id = user_temp.reserva_id
-WHERE 
-    DATE(r.data_inicio) = ?
-GROUP BY 
-    s.id, r.id, u.conta, r.data_inicio, r.data_fim, s.nome_sala, u.id, u.permissao");
-    $sql->bind_param("s", $date);
-
-    $sql->execute();
+    function select_por_dia($conn, $ano, $mes, $dia, $filial) {
+        global $resultado;
     
-    $resultado = $sql->get_result();
+        if ($dia < 10) {
+            $dia = "0" . $dia;
+        }
     
-    if ($resultado) {
-        // Consulta bem-sucedida
-    } else {
-        echo "Erro ao executar a consulta: " . $conn->error;
-        $resultado = null; // Garantir que $resultado seja definido
+        $date = "$ano-$mes-$dia";
+        $sql = $conn->prepare("SELECT 
+        r.id as reserva_id,
+        r.data_inicio, 
+        r.data_fim,
+        u.conta AS nome_usuario, 
+        s.nome_sala AS nome_sala,
+        CONCAT(CAST(r.data_inicio AS CHAR), ' - ', CAST(r.data_fim AS CHAR)) AS periodo_reserva,
+        u.id AS user_id,
+        u.permissao AS user_permissao,
+        GROUP_CONCAT(DISTINCT membros_user.conta SEPARATOR ', ') AS membros,
+        GROUP_CONCAT(DISTINCT user_temp.email SEPARATOR ', ') AS membros_temp,
+        s.id as sala_id
+    FROM 
+        reservas r
+    JOIN 
+        users u ON r.user_id = u.id
+    JOIN 
+        salas s ON r.sala_id = s.id
+    LEFT JOIN
+        membros m ON r.id = m.reserva_id
+    LEFT JOIN
+        users membros_user ON m.user_id = membros_user.id
+    LEFT JOIN
+        user_temp ON r.id = user_temp.reserva_id
+    WHERE 
+        DATE(r.data_inicio) = ? AND s.filial = ?
+    GROUP BY 
+        s.id, r.id, u.conta, r.data_inicio, r.data_fim, s.nome_sala, u.id, u.permissao");
+        $sql->bind_param("si", $date, $filial);
+    
+        $sql->execute();
+        
+        $resultado = $sql->get_result();
+        
+        if ($resultado) {
+            // Consulta bem-sucedida
+        } else {
+            echo "Erro ao executar a consulta: " . $conn->error;
+            $resultado = null; // Garantir que $resultado seja definido
+        }
     }
-}
 
     function select_por_membros($reserva_id,$conn) {
         global $resultado;

@@ -9,13 +9,15 @@ $id = $_SESSION['id'];
 $dia = $_GET['dia'];
 $mes = $_GET['mes'];
 $ano = $_GET['ano'];
+
+$filial = $_SESSION['filial'];
 // Consulta SQL para selecionar todos os usuários
 
 selectID('users', $id, $conn);
 $row2 = $resultado->fetch_assoc();
 $user_permissao = $row2["permissao"];
 
-select_por_dia($conn, $ano, $mes, $dia);
+select_por_dia($conn, $ano, $mes, $dia,$filial);
 
 // Initialize an array to store reservations by hour
 $reservations_by_hour = array_fill(0, 24, []);

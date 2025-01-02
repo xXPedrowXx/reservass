@@ -86,6 +86,7 @@ if ($resultado->num_rows > 0) {
                         echo '<button class="button-27" onclick="changeIframe(\'lista_salas.php\')">Salas</button>';
                         echo '<button class="button-27" onclick="changeIframe(\'lista_users.php\')">Usuários</button>';
                         echo '<button class="button-27" onclick="changeIframe(\'lista_indisponivel.php\')">Indisponiveis</button>';
+                        echo '<button class="button-27" onclick="changeIframe(\'lista_filiais.php\')">Filiais</button>';
                     ?>
                 </div>
             </div>

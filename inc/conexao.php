@@ -3,8 +3,8 @@
 session_start();
 $servername = "localhost";
 $username = "root";
-$password = "123@123APK";
-$dbname = "controle_salas";
+$password = "";
+$dbname = "teste_implementacao";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 

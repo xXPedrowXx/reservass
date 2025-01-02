@@ -50,7 +50,7 @@ selectID($tabela="indisponivel",$id,$conn);
             header("Location: lista_indisponivel.php");
             exit();
         }else {
-                echo "Erro ao editar dashboard: " . $conn->error;
+                echo "Erro ao editar Indisponibilidade: " . $conn->error;
             }
         } 
     
@@ -64,7 +64,7 @@ selectID($tabela="indisponivel",$id,$conn);
 	<meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar dash</title>
+    <title>Editar indisponivel</title>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/login.css">
 </head>

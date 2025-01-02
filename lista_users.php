@@ -7,9 +7,10 @@ include 'inc/query.php';
 // Verificar se o adm está logado
 verificarPermissao($conn); // Chame a função para verificar a permissão
 
-// Consulta SQL para selecionar todos os usuários
-select($tabela="users",$conn);
+$filial = $_SESSION['filial'];
 
+// Consulta SQL para selecionar todos os usuários
+select_user( $filial, $conn)
 
 
 ?>
