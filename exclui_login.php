@@ -19,7 +19,9 @@ if(isset($_GET['id'])) {
         exit();
     }
     // Chama a função para excluir a categoria
+    delete_UF('user_filiais',    $id,$conn,);
     deletee('users',    $id,$conn,);
+    
     header ("Location: lista_users.php");
 } else {
     echo "ID da categoria não foi fornecido.";

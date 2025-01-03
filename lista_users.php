@@ -2,16 +2,16 @@
 
 include 'inc/query.php'; 
 
-
 // Iniciar sessão
+
+
 // Verificar se o adm está logado
 verificarPermissao($conn); // Chame a função para verificar a permissão
 
-$filial = $_SESSION['filial'];
+$filiais = $_SESSION['filial'];
 
 // Consulta SQL para selecionar todos os usuários
-select_user( $filial, $conn)
-
+$usuarios = select_user($filiais, $conn);
 
 ?>
 
@@ -37,45 +37,45 @@ select_user( $filial, $conn)
         <br>
         <br>
         <table class="table" id="table_id">
-    <thead>
-        <tr>
-            <th scope="col">Usuário</th>
-            <th scope="col">Email</th>
-            <th scope="col">Permissão</th>
+            <thead>
+                <tr>
+                    <th scope="col">Usuário</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Permissão</th>
+                    <th scope="col">Filiais</th>
+               
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                // Verifica se a consulta retornou algum resultado
+                if ($usuarios) {
+                    // Loop através de todos os resultados da consulta
+                    foreach ($usuarios as $usuario) {
+                        echo "<tr>";
+                        echo "<td id='borda'>" . htmlspecialchars($usuario["conta"]) . "</td>";
+                        echo "<td id='borda'>" . htmlspecialchars($usuario["email"]) . "</td>";
+                        echo "<td id='borda'>" . htmlspecialchars($usuario["permissao"]) . "</td>";
+                        echo "<td id='borda'>" . htmlspecialchars($usuario["filiais"]) . "</td>";
 
-
-        </tr>
-    </thead>
-    <tbody>
-        <?php
-        // Verifica se a consulta retornou algum resultado
-        if ($resultado->num_rows > 0) {
-            // Loop através de todos os resultados da consulta
-            while ($row = $resultado->fetch_assoc()) {
-                echo "<tr>";
-                echo "<td id='borda'>" . htmlspecialchars($row["conta"]) . "</td>";
-                echo "<td id='borda'>" . htmlspecialchars($row["email"]) . "</td>";
-                echo "<td id='borda'>" . htmlspecialchars($row["permissao"]) . "</td>";
-
-                echo "<td>";
-                echo '<a href="edita_login.php?id=' . $row["id"] . '" role="button" class="btn btn-warning btn-sm"><i class="far fa-edit"></i>&nbsp; Editar</a>';
-                echo ' ';
-                echo '<a href="exclui_login.php?id=' . $row["id"] . '" role="button" class="btn btn-danger btn-sm"><i class="far fa-trash-alt"></i>&nbsp; </a>';
-                echo "</td>";
-                echo "</tr>";
-            }
-        } else {
-            // Se não houver usuários, exibe uma mensagem na tabela
-            echo '<tr><td colspan="6">Nenhum usuário encontrado</td></tr>';
-        }
-        ?>
-    </tbody>
-</table>
+                        echo "<td>";
+                        echo '<a href="edita_login.php?id=' . $usuario["id"] . '" role="button" class="btn btn-warning btn-sm"><i class="far fa-edit"></i>&nbsp; Editar</a>';
+                        echo ' ';
+                        echo '<a href="exclui_login.php?id=' . $usuario["id"] . '" role="button" class="btn btn-danger btn-sm"><i class="far fa-trash-alt"></i>&nbsp; </a>';
+                        echo "</td>";
+                        echo "</tr>";
+                    }
+                } else {
+                    // Se não houver usuários, exibe uma mensagem na tabela
+                    echo '<tr><td colspan="5">Nenhum usuário encontrado</td></tr>';
+                }
+                ?>
+            </tbody>
+        </table>
 
         <div style="text-align: right;">
             <a href="cadastro.php" role="button" class="btn btn-success btn-sm">Novo Usuário</a>
             <a href="cadastro_Adm.php" role="button" class="btn btn-success btn-sm">Novo Adm</a>
-
         </div>
 
     </div>

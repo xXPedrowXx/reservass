@@ -10,19 +10,19 @@ $dia = $_GET['dia'];
 $mes = $_GET['mes'];
 $ano = $_GET['ano'];
 
-$filial = $_SESSION['filial'];
+$filial = (array) $_SESSION['filial']; // Certifique-se de que $filial seja um array
 // Consulta SQL para selecionar todos os usuários
 
 selectID('users', $id, $conn);
 $row2 = $resultado->fetch_assoc();
 $user_permissao = $row2["permissao"];
 
-select_por_dia($conn, $ano, $mes, $dia,$filial);
+$reservas = select_por_dia($conn, $ano, $mes, $dia, $filial);
 
 // Initialize an array to store reservations by hour
 $reservations_by_hour = array_fill(0, 24, []);
 
-while ($row = $resultado->fetch_assoc()) {
+foreach ($reservas as $row) {
     $start_hour = (int)substr($row["data_inicio"], 11, 2);
     $end_hour = (int)substr($row["data_fim"], 11, 2);
     for ($hour = $start_hour; $hour <= $end_hour; $hour++) {
@@ -67,17 +67,15 @@ while ($row = $resultado->fetch_assoc()) {
                             echo "Na sala : " . $reservation["nome_sala"] . "<br>";
                             echo "Reservado por: " . $reservation["nome_usuario"] . "<br>";
 
-
-                            
                             $periodo_reserva = $reservation["periodo_reserva"];
                             $mesI = substr($periodo_reserva, 5, 2); // Do 5º ao 14º caractere
-                        $diaI = substr($periodo_reserva, 8, 2); // Do 7º ao 8º caractere
-                        $horaI = substr($periodo_reserva, 11, 5); // Do 9º ao 13º caractere
-                        
-                        $mesF = substr($periodo_reserva, 27, 2); // Do 27º ao 28º caractere
-                        $diaF = substr($periodo_reserva, 30, 2); // Do 29º ao 30º caractere
-                        $horaF = substr($periodo_reserva, 33, 5); // Do 31º ao 35º caractere
-                        
+                            $diaI = substr($periodo_reserva, 8, 2); // Do 7º ao 8º caractere
+                            $horaI = substr($periodo_reserva, 11, 5); // Do 9º ao 13º caractere
+                            
+                            $mesF = substr($periodo_reserva, 27, 2); // Do 27º ao 28º caractere
+                            $diaF = substr($periodo_reserva, 30, 2); // Do 29º ao 30º caractere
+                            $horaF = substr($periodo_reserva, 33, 5); // Do 31º ao 35º caractere
+                            
                             echo "De: " . $mesI . "/" . $diaI . " " . $horaI . " Até " . $mesF . "/" . $diaF . " " . $horaF . "<br>";
 
                             echo "Sendo membros: " . $reservation["membros"] . "<br>";

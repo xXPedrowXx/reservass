@@ -8,28 +8,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $conta = $_POST['conta'];
     $email = $_POST['email'];
     $senha = $_POST['senha'];
-    $filial = $_POST['filial'];
+    $filiais = $_POST['filiais']; // Recebe os IDs das filiais como um array
 
-    // Validação do email
+    // Verifica se algum campo está vazio
+    if (empty($conta) || empty($email) || empty($senha) || empty($filiais) || !is_array($filiais) || count($filiais) === 0) {
+        echo "Todos os campos são obrigatórios.";
+        exit();
+    }
+
+    /* Validação do email
     if (!preg_match('/@apklog\.com\.br$|@apk\.com\.br$/', $email)) {
         echo "Email inválido. O email deve terminar com @apklog.com.br ou @apk.com.br.";
         echo "<br>";
         echo "Favor atualizar a pagina e inserir um email valido";
         exit();
     }
-
+*/
     $numero1 = rand(1, 100);
     $numero2 = rand(1, 100);
     $numero3 = rand(1, 100);
     $numero = $numero1 . $numero2 . $numero3;
 
-    insertU($conta, $email, $senha, '1', $numero,$filial, $conn);
+    // Insere o usuário e obtém o ID do usuário recém-inserido
+    $user_id = insertU($conta, $email, $senha, '1', $numero, $conn);
+
+    // Associa o usuário às filiais selecionadas
+    if ($user_id) {
+        foreach ($filiais as $filial_id) {
+            insertUserFilial($user_id, $filial_id, $conn);
+        }
+    }
 
     header('Location: email_confirmacao.php?email=' . urlencode($email));
     exit();
 }
 
- select_filiais($conn);
+select_filiais($conn);
 ?>
 <!DOCTYPE html>
 <html>
@@ -47,17 +61,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form method="post" class="formLogin" id="formLogin">
                 <h1>Cadastro de usuario</h1>
                 <label for="conta">Username</label>
-                <input id="conta" type="text" name="conta" autofocus="true" placeholder="Digite seu username">
+                <input id="conta" type="text" name="conta" autofocus="true" placeholder="Digite seu username" required>
                 
                 <label for="email">Email</label>
-                <input id="email" type="email" name="email" placeholder="Digite seu Email">
+                <input id="email" type="email" name="email" placeholder="Digite seu Email" required>
                 
                 <label for="senha">Senha</label>
-                <input id="senha" type="password" name="senha" placeholder="Digite sua Senha">
+                <input id="senha" type="password" name="senha" placeholder="Digite sua Senha" required>
 
-                <label for="filial">Filial</label>
+                <label for="filiais">Filiais</label>
                 <div class="dropdown">
-                    <input readonly onclick="myFunction('salaDropdown')" placeholder="<?php echo !empty($nome) ? $nome : 'Select Filial'; ?>" class="dropbtn">
+                    <input readonly onclick="myFunction('salaDropdown')" placeholder="Select Filiais" class="dropbtn" required>
                     <div id="salaDropdown" class="dropdown-content">
                         <input type="text" placeholder="Filtre" id="salaInput" onkeyup="filterFunction('salaInput', 'salaDropdown')" onclick="event.stopPropagation()">
                         <?php
@@ -68,13 +82,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <input type="hidden" id="filial" name="filial" value="<?php echo $filial; ?>" required>
+                <input type="hidden" id="filiais" name="filiais[]" required>
                 
                 <input id="button" type="submit" value="Cadastrar" class="btn">
             </form>
         </div>
 
         <script>
+    var selectedFiliais = [];
+
     function myFunction(dropdownId) {
         document.getElementById(dropdownId).classList.toggle("show");
     }
@@ -96,15 +112,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     function selectSala(id, name) {
-        document.getElementById("filial").value = id;
-        document.querySelector(".dropbtn").innerText = name;
+        if (!selectedFiliais.includes(id)) {
+            selectedFiliais.push(id);
+            var filialInput = document.getElementById("filiais");
+            filialInput.value = selectedFiliais.join(',');
+            var dropbtn = document.querySelector(".dropbtn");
+            dropbtn.innerText = selectedFiliais.map(f => name).join(', ');
+        }
         document.getElementById("salaDropdown").classList.remove("show");
-        updateSala(id, name);
-    }
-
-    function updateSala(id, name) {
-        // Add your logic here if needed
-        console.log("Sala updated: ", id, name);
     }
 
     window.onclick = function(event) {
@@ -117,6 +132,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
         }
+    }
+
+    document.getElementById('formLogin').onsubmit = function() {
+        if (selectedFiliais.length === 0) {
+            alert('Por favor, selecione pelo menos uma filial.');
+            return false;
+        }
+        return true;
     }
 </script>
     </main>

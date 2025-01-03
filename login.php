@@ -40,7 +40,7 @@
 <?php
 include 'inc/query.php'; 
 
-
+session_start();
 
 $err_email = $err_password = $err_missing = "";
 
@@ -53,11 +53,9 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         $err_missing = "Todos os campos devem ser preenchidos";
     } else {
         // Utilizando consultas preparadas para evitar SQL Injection
-        $resultado = selectlogin($email, $conn);
+        $user_data = selectlogin($email, $conn);
 
-        if ($resultado && $resultado->num_rows > 0) {
-            $user_data = $resultado->fetch_assoc();
-
+        if ($user_data) {
             // Verificando a senha
             if ($user_data['senha'] === $senha) {
                 if ($user_data['verificado'] == 0) {
@@ -67,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 $_SESSION['id'] = $user_data['id'];
                 $_SESSION['email'] = $user_data['email']; 
                 $_SESSION['permissao'] = $user_data['permissao']; 
-                $_SESSION['filial'] = $user_data['filial']; 
+                $_SESSION['filial'] = explode(', ', $user_data['filiais']);
 
                 if ($user_data['permissao'] == 5) {
                     header("Location: Adm.php");

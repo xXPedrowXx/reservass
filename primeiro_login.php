@@ -1,7 +1,6 @@
 <?php
 include 'inc/query.php'; 
 
-
 $err_email = $err_password = $err_missing = $err_confiração = "";
 
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
@@ -14,13 +13,13 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         $err_missing = "Todos os campos devem ser preenchidos";
     } else {
         // Utilizando consultas preparadas para evitar SQL Injection
-        $resultado = selectlogin($email, $conn);
+        $resultado = selectlogin2($email, $conn);
 
         if ($resultado && $resultado->num_rows > 0) {
             $user_data = $resultado->fetch_assoc();
 
             // Verificando a senha
-            if ($user_data['senha'] === $senha && $user_data['codigo_verificação'] === $codigo_verificação) {
+            if ($user_data['senha'] === $senha && $user_data['codigo_verificacao'] === $codigo_verificação) {
                 $_SESSION['id'] = $user_data['id'];
                 $_SESSION['email'] = $user_data['email']; 
                 $_SESSION['permissao'] = $user_data['permissao']; 
@@ -42,8 +41,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         }
     }
 }
-
-
 ?>
 <!DOCTYPE html>
 <html>
@@ -75,11 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
                 <input id="button" type="submit" value="Logar" class="btn">
 
-            
-                
-
-                <?php if (!empty($err_missing)) { echo "<p id='error'>" . $err_missing . "</p>"; }
-                  ?>
+                <?php if (!empty($err_missing)) { echo "<p id='error'>" . $err_missing . "</p>"; } ?>
             </form>
         </div>
     </main>

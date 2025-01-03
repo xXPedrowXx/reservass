@@ -9,10 +9,22 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
+$filial = $_SESSION['filial'];
+
 $user_id = $_SESSION['id'];
 $id = $_GET['id'];
 
-selectID("reservas", $id, $conn);
+// Obtém as filiais do usuário
+$user_filiais = [];
+$user_filiais_result = $conn->prepare("SELECT filial_id FROM user_filiais WHERE user_id = ?");
+$user_filiais_result->bind_param('i', $user_id);
+$user_filiais_result->execute();
+$result = $user_filiais_result->get_result();
+while ($row = $result->fetch_assoc()) {
+    $user_filiais[] = $row['filial_id'];
+}
+
+ selectID("reservas", $id, $conn);
 
 if ($resultado && $resultado->num_rows > 0) {
     $row = $resultado->fetch_assoc();
@@ -37,9 +49,7 @@ while ($row = $resultado->fetch_assoc()) {
     $reservas[] = $row;
 }
 
-select_sala($conn);
-
-
+$sala_resultado = select_sala_filial($user_filiais, $conn);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $data_inicio = $_POST['data_inicio'];
@@ -61,7 +71,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 ?>
 
-<!DOCTYPE htmllang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Cadastro de Reservas</title>
@@ -74,22 +85,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <main>
         <div class="page">
             <form method="post" id="formLogin" class="formLogin">
-            <h1 id="top">Reservar sala</h1>
+                <h1 id="top">Reservar sala</h1>
 
-<label for="sala_id">Salas</label>
-<div class="dropdown">
-<input id="teste" readonly onclick="myFunction('salaDropdown')" value="<?php echo !empty($nome_sala) ? $nome_sala : ''; ?>" placeholder="Select Sala" class="dropbtn">
-    <div id="salaDropdown" class="dropdown-content">
-        <input type="text" id="salaInput" onkeyup="filterFunction('salaInput', 'salaDropdown')" onclick="event.stopPropagation()">
-        <?php
-        while ($sala = $resultado->fetch_assoc()) {
-            echo '<a href="#" onclick="selectSala(' . $sala['id'] . ', \'' . $sala['nome_sala'] . '\')">' . $sala['nome_sala'] . '</a>';
-        }
-        ?>
-    </div>
-</div>
+                <label for="sala_id">Salas</label>
+                <div class="dropdown">
+                    <input id="teste" readonly onclick="myFunction('salaDropdown')" value="<?php echo !empty($nome_sala) ? $nome_sala : ''; ?>" placeholder="Select Sala" class="dropbtn">
+                    <div id="salaDropdown" class="dropdown-content">
+                        <input type="text" id="salaInput" onkeyup="filterFunction('salaInput', 'salaDropdown')" onclick="event.stopPropagation()">
+                        <?php
+                        while ($sala = $sala_resultado->fetch_assoc()) {
+                            echo '<a href="#" onclick="selectSala(' . $sala['id'] . ', \'' . $sala['nome_sala'] . '\')">' . $sala['nome_sala'] . '</a>';
+                        }
+                        ?>
+                    </div>
+                </div>
 
-<input type="hidden" id="sala_id" name="sala_id" value="<?php echo $sala_id; ?>" required>
+                <input type="hidden" id="sala_id" name="sala_id" value="<?php echo $sala_id; ?>" required>
 
                 <label for="data_inicio">Hora de início de reserva</label>
                 <select name="data_inicio" id="data_inicio">
@@ -140,7 +151,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </main>
 
     <script>
-        
         function myFunction(dropdownId) {
             document.getElementById(dropdownId).classList.toggle("show");
         }
@@ -178,9 +188,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
             }
         }
-
-      
-    
     </script>
 </body>
 </html>

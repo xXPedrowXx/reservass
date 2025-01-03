@@ -20,12 +20,12 @@ try {
 
   $email = $_GET['email'];
 
-  $resultado = selectlogin($email, $conn);
+  $resultado = selectlogin2($email, $conn);
 
 if ($resultado && $resultado->num_rows > 0) {
   $row = $resultado->fetch_assoc();
   $nome = $row['conta'];
-  $numero = $row['codigo_verificação'];}
+  $numero = $row['codigo_verificacao'];}
 
   $mail->isSMTP();                                          //Send using SMTP
   $mail->Host       = 'smtp.acessoseguro.net';             //Set the SMTP server to send through

@@ -3,18 +3,17 @@
 include 'inc/query.php'; 
 
 
-// Iniciar sessão
-// Verificar se o adm está logado
 
 $user_id = $_SESSION['id'];
-$filial =  $_SESSION['filial'];
+$filiais = $_SESSION['filial'];
 
-selectID('users',$user_id,$conn);
+
+selectID('users', $user_id, $conn);
 $row2 = $resultado->fetch_assoc();
 $user_permissao = $row2["permissao"];
 
-// Consulta SQL para selecionar todos os usuários
-select_sala_filial($filial, $conn);
+// Consulta SQL para selecionar todas as salas das filiais do usuário
+$salas = select_sala_filial($filiais, $conn);
 
 ?>
 
@@ -23,7 +22,7 @@ select_sala_filial($filial, $conn);
 
 <head>
     <meta charset="UTF-8">
-    <title>CRUD PHP - Usuários</title>
+    <title>Salas</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
         integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
@@ -35,57 +34,53 @@ select_sala_filial($filial, $conn);
     <div class="container" style="margin-top: 40px">
 
         <center>
-            <h3>Lista de salas</h3>
+            <h3>Lista de Salas</h3>
         </center>
         <br>
         <br>
         <table class="table" id="table_id">
             <thead>
                 <tr>
-                    <th scope="col">Nome</th>
+                    <th scope="col">ID</th>
+                    <th scope="col">Nome da Sala</th>
                     <th scope="col">Descrição</th>
-                    <th scope="col">Reservas</th>
-
                 </tr>
             </thead>
             <tbody>
                 <?php
                 // Verifica se a consulta retornou algum resultado
-                if ($resultado->num_rows > 0) {
+                if ($salas) {
                     // Loop através de todos os resultados da consulta
-                    while ($row = $resultado->fetch_assoc()) {
+                    foreach ($salas as $sala) {
                         echo "<tr>";
-                        echo "<td id='borda'>" . $row["nome_sala"] . "</td>";
-                        echo "<td id='borda'>" . $row["descricao"] . "</td>";
-                        echo '<td id="borda"> <a href="lista_reservas_sala.php?sala_id=' . $row["id"] . '" role="button" class="btn btn-primary btn-sm">Reservas</a> <div class=""></div>';
+                        echo "<td id='borda'>" . $sala["nome_sala"] . "</td>";
+                        echo "<td id='borda'>" . $sala["descricao"] . "</td>";
+                        echo '<td id="borda"> <a href="lista_reservas_sala.php?sala_id=' . $sala["id"] . '" role="button" class="btn btn-primary btn-sm">Reservas</a> <div class=""></div>';
                         echo ' ';
                             if ($user_permissao == 5) {
-                        echo ' <a href="cadastro_indisponibilidade.php?sala_id='.$row["id"] .'&user_id='.$user_id.'" role="button" class="btn btn-warning btn-sm">Indisponivel</a>
+                        echo ' <a href="cadastro_indisponibilidade.php?sala_id='.$sala["id"] .'&user_id='.$user_id.'" role="button" class="btn btn-warning btn-sm">Indisponivel</a>
                         </td>';
                         echo "<td>";
-                        echo '<a href="edita_sala.php?id=' . $row["id"] . '" role="button" class="btn btn-warning btn-sm"><i class="far fa-edit"></i>&nbsp; Editar</a>';
+                        echo '<a href="edita_sala.php?id=' . $sala["id"] . '" role="button" class="btn btn-warning btn-sm"><i class="far fa-edit"></i>&nbsp; Editar</a>';
                         echo ' ';
-                        echo '<a href="exclui_sala.php?id=' . $row["id"] . '" role="button" class="btn btn-danger btn-sm"><i class="far fa-trash-alt"></i>&nbsp;</a>';
+                        echo '<a href="exclui_sala.php?id=' . $sala["id"] . '" role="button" class="btn btn-danger btn-sm"><i class="far fa-trash-alt"></i>&nbsp;</a>';
                         echo "</td>";
                         echo "</tr>";}
-
                     }
                 } else {
-                    // Se não houver usuários, exibe uma mensagem na tabela
-                    echo '<tr><td colspan="5">Nenhuma sala encontrado</td></tr>';
+                    // Se não houver salas, exibe uma mensagem na tabela
+                    echo '<tr><td colspan="3">Nenhuma sala encontrada</td></tr>';
                 }
                 ?>
             </tbody>
         </table>
-
-        <div style="text-align: right; margin-top:20px;">
-            <?php
+        <?php
         if ($user_permissao == 5) {
-          echo '<a href="cadastro_sala.php" role="button" class="btn btn-success btn-sm">Nova sala</a>';
+        echo '<div style="text-align: right;">';
+           echo '   <a href="cadastro_sala.php" role="button" class="btn btn-success btn-sm">Nova Sala</a>';
+         echo ' </div>';
         }
-?>
-        </div>
-
+        ?>
     </div>
 
     <script src="https://kit.fontawesome.com/cae6919cdb.js" crossorigin="anonymous"></script>

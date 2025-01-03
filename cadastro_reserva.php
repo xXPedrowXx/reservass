@@ -18,6 +18,16 @@ $user_id = $_SESSION['id'];
 $sala_id = isset($_GET['sala_id']) ? $_GET['sala_id'] : null;
 $nome_sala = isset($_GET['nome_sala']) ? $_GET['nome_sala'] : '';
 
+// Obtém as filiais do usuário
+$user_filiais = [];
+$user_filiais_result = $conn->prepare("SELECT filial_id FROM user_filiais WHERE user_id = ?");
+$user_filiais_result->bind_param('i', $user_id);
+$user_filiais_result->execute();
+$result = $user_filiais_result->get_result();
+while ($row = $result->fetch_assoc()) {
+    $user_filiais[] = $row['filial_id'];
+}
+
 $resultado = selectdata($conn, $sala_id, $ano, $mes, $dia);
 
 $reservas = [];
@@ -25,7 +35,8 @@ while ($row = $resultado->fetch_assoc()) {
     $reservas[] = $row;
 }
 
-select_sala_filial($filial, $conn)
+// Armazena o resultado da consulta de salas em uma variável separada
+$sala_resultado = select_sala_filial($user_filiais, $conn);
 ?>
 
 <!DOCTYPE html>
@@ -50,8 +61,10 @@ select_sala_filial($filial, $conn)
                     <div id="salaDropdown" class="dropdown-content">
                         <input type="text" placeholder="Filtre" id="salaInput" onkeyup="filterFunction('salaInput', 'salaDropdown')" onclick="event.stopPropagation()">
                         <?php
-                        while ($sala = $resultado->fetch_assoc()) {
-                            echo '<a href="#" onclick="selectSala(' . $sala['id'] . ', \'' . $sala['nome_sala'] . '\')">' . $sala['nome_sala'] . '</a>';
+                        if ($sala_resultado) {
+                            foreach ($sala_resultado as $sala) {
+                                echo '<a href="#" onclick="selectSala(' . $sala['id'] . ', \'' . $sala['nome_sala'] . '\')">' . $sala['nome_sala'] . '</a>';
+                            }
                         }
                         ?>
                     </div>
@@ -124,7 +137,7 @@ select_sala_filial($filial, $conn)
                     <div id="grupoDropdown" class="dropdown-content">
                         <input type="text" placeholder="aplique o filtro" id="grupoInput" onkeyup="filterFunction('grupoInput', 'grupoDropdown')" onclick="event.stopPropagation()">
                         <?php
-                  select_cadastro_membro($user_id, $filial, $conn);
+                  select_cadastro_membro($user_id,  $conn);
                         while ($sala = $resultado->fetch_assoc()) {
                             echo '<a onclick="selectGroup(' . $sala['user_id'] . ', \'' . $sala['user_conta'] . '\')">' . $sala['user_conta'] . '</a>';
                         }

@@ -16,13 +16,17 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
     permissao INT NOT NULL CHECK (permissao BETWEEN 1 AND 10),
-    codigo_verificação Varchar(255),
-    verificado bool,
-    filial int not null,
-    FOREIGN KEY (filial) REFERENCES filiais(id)
+    codigo_verificacao VARCHAR(255),
+    verificado BOOL
 );
 
-
+CREATE TABLE IF NOT EXISTS user_filiais (
+    user_id INT NOT NULL,
+    filial_id INT NOT NULL,
+    PRIMARY KEY (user_id, filial_id),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (filial_id) REFERENCES filiais(id)
+);
 
 
 CREATE TABLE IF NOT EXISTS salas (
@@ -30,7 +34,7 @@ CREATE TABLE IF NOT EXISTS salas (
     nome_sala VARCHAR(255) NOT NULL UNIQUE,
     descricao VARCHAR(255) NOT NULL,
     filial int not null,
-    FOREIGN KEY (filial) REFERENCES filiais(id),
+    FOREIGN KEY (filial) REFERENCES filiais(id)
    
 );	
 
